@@ -225,7 +225,7 @@ export default function FlatFinder() {
 						</div>
 
 						<a
-							href="https://forms.gle/YOUR_GOOGLE_FORM_ID"
+							href="https://forms.gle/zgSSwGhtosZLEM5M6"
 							target="_blank"
 							rel="noopener noreferrer"
 							className="inline-block  px-4 py-3 bg-[#49548a] text-white font-semibold rounded-lg shadow hover:bg-blue-900 transition-colors"
@@ -332,7 +332,7 @@ export default function FlatFinder() {
 					</div>
 
 					{/* Search Button */}
-					<div className="mt-8 flex items-center justify-between gap-7"> 
+					<div className="mt-8 flex items-center justify-between gap-7">
 						<button
 							onClick={handleSearch}
 							disabled={!selectedCity || isSearching}
