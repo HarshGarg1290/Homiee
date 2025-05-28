@@ -223,15 +223,15 @@ export default function FlatFinder() {
 							</div>
 							<h1 className="text-xl font-semibold text-gray-900">Homiee</h1>
 						</div>
-						{hasActiveFilters && (
-							<button
-								onClick={clearAllFilters}
-								className="flex items-center text-sm text-gray-500 hover:text-gray-700 transition-colors"
-							>
-								<X className="w-4 h-4 mr-1" />
-								Clear
-							</button>
-						)}
+
+						<a
+							href="https://forms.gle/YOUR_GOOGLE_FORM_ID"
+							target="_blank"
+							rel="noopener noreferrer"
+							className="inline-block  px-4 py-3 bg-[#49548a] text-white font-semibold rounded-lg shadow hover:bg-blue-900 transition-colors"
+						>
+							+ Add a Flat
+						</a>
 					</div>
 				</div>
 			</header>
@@ -246,6 +246,7 @@ export default function FlatFinder() {
 						Discover comfortable living spaces that match your preferences and
 						budget
 					</p>
+					{/* Add Flat Button */}
 				</div>
 
 				{/* Search Form */}
@@ -331,7 +332,7 @@ export default function FlatFinder() {
 					</div>
 
 					{/* Search Button */}
-					<div className="mt-8">
+					<div className="mt-8 flex items-center justify-between gap-7"> 
 						<button
 							onClick={handleSearch}
 							disabled={!selectedCity || isSearching}
@@ -349,6 +350,15 @@ export default function FlatFinder() {
 								</>
 							)}
 						</button>
+						{hasActiveFilters && (
+							<button
+								onClick={clearAllFilters}
+								className="flex items-center text-sm text-gray-700 hover:text-black transition-colors"
+							>
+								<X className="w-4 h-4 mr-1" />
+								Clear
+							</button>
+						)}
 					</div>
 				</div>
 
