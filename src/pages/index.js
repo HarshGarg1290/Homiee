@@ -30,8 +30,20 @@ export default function FlatFinder() {
 
 	useEffect(() => {
 		fetch("/api/listings")
-			.then((response) => response.json())
+			.then((response) => {
+				if (!response.ok) {
+					throw new Error(`API error: ${response.status}`);
+				}
+				return response.json();
+			})
 			.then((data) => {
+				// Check if data is an array before filtering
+				if (!Array.isArray(data)) {
+					console.error("Data is not an array:", data);
+					setListings([]); // Set to empty array as fallback
+					return;
+				}
+
 				const filteredData = data.filter(
 					(listing) => listing.City && listing.Message
 				);
