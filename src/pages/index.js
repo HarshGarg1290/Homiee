@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import Head from "next/head";
 import {
 	MapPin,
 	IndianRupee,
@@ -185,14 +186,28 @@ export default function FlatFinder() {
 		selectedCity || selectedSubregion || selectedGender || selectedBudget;
 
 	return (
-		<div className="min-h-screen bg-gray-50">
+		<div className="min-h-screen bg-gray-50 font-['Montserrat',sans-serif]">
+			<Head>
+				<title>Homiee - Find your perfect home</title>
+				<link
+					href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap"
+					rel="stylesheet"
+				/>
+				<style jsx global>{`
+					html,
+					body {
+						font-family: "Montserrat", sans-serif;
+					}
+				`}</style>
+			</Head>
+
 			{/* Minimal Header */}
 			<header className="bg-white border-b border-gray-100 sticky top-0 z-50">
 				<div className="max-w-5xl mx-auto px-6 py-4">
 					<div className="flex items-center justify-between">
 						<div className="flex items-center space-x-3">
-							<div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-								<Home className="w-4 h-4 text-white" />
+							<div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
+								<img src="/logo.jpg" alt="Homiee Logo" className="w-8 h-8" />
 							</div>
 							<h1 className="text-xl font-semibold text-gray-900">Homiee</h1>
 						</div>
@@ -308,7 +323,7 @@ export default function FlatFinder() {
 						<button
 							onClick={handleSearch}
 							disabled={!selectedCity || isSearching}
-							className="w-full bg-black hover:bg-gray-800 disabled:bg-gray-300 text-white h-12 rounded-xl font-medium transition-colors flex items-center justify-center"
+							className="w-full bg-[#49548a] hover:bg-[#30375b] disabled:bg-gray-300 text-white h-12 rounded-xl font-medium transition-colors flex items-center justify-center"
 						>
 							{isSearching ? (
 								<>
@@ -380,11 +395,11 @@ export default function FlatFinder() {
 													</div>
 												</div>
 												<div className="flex flex-col items-end space-y-2">
-													<span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
+													<span className="px-3 py-1 bg-blue-100 text-[#49548a] text-xs rounded-full">
 														{listing.Gender} preferred
 													</span>
 													{listing["Flatmate Req"] && (
-														<span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
+														<span className="px-3 py-1 bg-blue-100 text-[#49548a] text-xs rounded-full">
 															{listing["Flatmate Req"]} flatmate
 															{parseInt(listing["Flatmate Req"]) > 1
 																? "s"
@@ -397,27 +412,27 @@ export default function FlatFinder() {
 
 											<button
 												onClick={() => toggleListingDetails(index)}
-												className="w-full flex items-center justify-between p-3 border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors"
+												className="w-full flex items-center justify-between p-3 border border-gray-200 hover:bg-blue-50 rounded-lg transition-colors"
 											>
-												<span className="font-medium text-gray-700">
+												<span className="font-medium text-[#49548a]">
 													{expandedListing === index
 														? "Hide details"
 														: "View details"}
 												</span>
 												<ChevronRight
-													className={`w-4 h-4 text-gray-400 transition-transform ${
+													className={`w-4 h-4 text-[#49548a] transition-transform ${
 														expandedListing === index ? "rotate-90" : ""
 													}`}
 												/>
 											</button>
 
 											{expandedListing === index && (
-												<div className="mt-4 p-4 bg-gray-50 rounded-lg">
+												<div className="mt-4 p-4 bg-blue-50 rounded-lg">
 													<p className="text-gray-700 text-sm leading-relaxed mb-4">
 														{listing.Message}
 													</p>
 													{extractContact(listing.Message) && (
-														<div className="flex items-center text-gray-600 text-sm">
+														<div className="flex items-center text-[#49548a] text-sm">
 															<Phone className="w-4 h-4 mr-2" />
 															<span className="font-mono">
 																{extractContact(listing.Message)}
