@@ -1,7 +1,7 @@
 {
-  "functions": {
-    "src/pages/api/predict.py": {
-      "runtime": "python3.9"
-    }
-  }
+	"functions": {
+		"src/pages/api/predict.py": {
+			"runtime": "@vercel/python"
+		}
+	}
 }
