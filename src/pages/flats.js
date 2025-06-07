@@ -221,7 +221,7 @@ export default function FlatFinder() {
 							<div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
 								<img src="/logo.jpg" alt="Homiee Logo" className="w-8 h-8" />
 							</div>
-							<h1 className="text-xl font-semibold text-gray-900">Homiee</h1>
+							<h1 className="text-2xl font-bold text-gray-900">Homiee</h1>
 						</div>
 
 						<a
