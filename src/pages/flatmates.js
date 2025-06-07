@@ -248,7 +248,7 @@ export default function FlatmateForm() {
 					{/* Submit */}
 					<button
 						type="submit"
-						className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg shadow-lg transition-all text-lg mt-4"
+						className="w-full bg-[#49548a] hover:bg-blue-900 text-white font-semibold py-3 rounded-lg shadow-lg transition-all text-lg mt-4"
 					>
 						Find Flatmates
 					</button>
