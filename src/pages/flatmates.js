@@ -37,6 +37,12 @@ const guestHost = [
 const genders = [
   "Male", "Female"
 ];
+const localities = [
+  "North Delhi", "Central Delhi", "East Delhi", "South Delhi",
+  "DLF4", "DLF 2", "DLF 5", "DLF 3", "Sector 18", "Sector 50", "Sector 48", "Sector 43", "Sector 55/56", "Sushant Lok", "Udyog Vihar", "Golf Course Extension",
+  "Kormangla", "HSR Layout", "Haralur", "Marathalli", "Whitefield", "Electronic city",
+  "Andheri W", "Marine/Colaba", "Borivali/Kandivali/Malad", "Lower Parel/Worli/Parel", "Vile Parle", "Bandra", "Andheri E", "Goregon"
+];
 
 export default function FlatmateForm() {
   const [form, setForm] = useState(initialState);
@@ -94,15 +100,20 @@ export default function FlatmateForm() {
 						<label className="block text-sm font-medium text-gray-700 mb-1">
 							Locality
 						</label>
-						<input
-							type="text"
+						<select
 							name="Locality"
 							value={form.Locality}
 							onChange={handleChange}
-							placeholder="e.g. HSR Layout"
 							required
 							className="w-full border text-gray-700 border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-						/>
+						>
+							<option value="">Select Locality</option>
+							{localities.map((loc) => (
+								<option key={loc} value={loc}>
+									{loc}
+								</option>
+							))}
+						</select>
 					</div>
 					{/* Budget */}
 					<div>
