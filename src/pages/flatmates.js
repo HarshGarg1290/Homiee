@@ -118,15 +118,25 @@ export default function FlatmateForm() {
 		setSubmitted(true);
 		setLoading(true);
 
-		const res = await fetch("/api/flatmate-recommend", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(form),
-		});
+		try {
+			const res = await fetch("/api/flatmate-recommend", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(form),
+			});
 
-		const data = await res.json();
-		setMatches(data.matches);
-		setLoading(false);
+			if (!res.ok) {
+				throw new Error(`HTTP error! status: ${res.status}`);
+			}
+
+			const data = await res.json();
+			setMatches(data.matches || []); // Fallback to empty array
+			setLoading(false);
+		} catch (error) {
+			console.error("Error:", error);
+			setMatches([]); // Set empty array on error
+			setLoading(false);
+		}
 	}
 
 	return (
