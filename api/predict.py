@@ -1,9 +1,8 @@
+import os
 import joblib
 import pandas as pd
-import os
-from http.server import BaseHTTPRequestHandler
 import json
-
+from http.server import BaseHTTPRequestHandler
 
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 model_dir = os.path.join(project_root, 'model')
@@ -24,22 +23,17 @@ class handler(BaseHTTPRequestHandler):
             content_length = int(self.headers['Content-Length'])
             post_data = self.rfile.read(content_length)
             body = json.loads(post_data.decode('utf-8'))
-            
             percentages = predict_matches(body)
-            
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
-            
             response = json.dumps({"match_percentages": percentages})
             self.wfile.write(response.encode('utf-8'))
-            
         except Exception as e:
             self.send_response(500)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
-            
             error_response = json.dumps({"error": str(e)})
             self.wfile.write(error_response.encode('utf-8'))
 
