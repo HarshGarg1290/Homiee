@@ -4,7 +4,7 @@ import os
 from http.server import BaseHTTPRequestHandler
 import json
 
-# Update path since we're now in api/ folder (one level up from root)
+
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 model_dir = os.path.join(project_root, 'model')
 
