@@ -80,7 +80,7 @@ export default async function handler(req, res) {
 			Cand_Gender: candidate.Gender,
 		}));
 
-		// Use absolute URL for the fetch call
+	
 		const protocol = req.headers["x-forwarded-proto"] || "https";
 		const host = req.headers.host;
 		const baseUrl = `${protocol}://${host}`;
