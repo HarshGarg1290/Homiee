@@ -1,8 +1,7 @@
 import fs from "fs";
 import path from "path";
 import Papa from "papaparse";
-// Import your prediction function directly
-import { predict } from "./predict";
+import { predict } from "./predict.py";
 
 const budgetOrder = [
 	"<15000",
