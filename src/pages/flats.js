@@ -12,6 +12,14 @@ import {
 	Loader2,
 } from "lucide-react";
 
+// Loading skeleton component for better UX
+const FormFieldSkeleton = () => (
+	<div className="space-y-2">
+		<div className="h-4 bg-gray-200 rounded w-16 animate-pulse"></div>
+		<div className="h-11 bg-gray-200 rounded-lg animate-pulse"></div>
+	</div>
+);
+
 export default function FlatFinder() {
 	// State for filters
 	const [selectedCity, setSelectedCity] = useState("");
@@ -259,55 +267,58 @@ export default function FlatFinder() {
 						font-family: "Montserrat", sans-serif;
 					}
 				`}</style>
-			</Head>
-
+			</Head>{" "}
 			{/* Minimal Header */}
 			<header className="bg-white border-b border-gray-100 sticky top-0 z-50">
-				<div className="max-w-5xl mx-auto px-6 py-4">
+				<div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
 					<div className="flex items-center justify-between">
-						<div className="flex items-center space-x-3">
-							<div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
-								<img src="/logo.jpg" alt="Homiee Logo" className="w-8 h-8" />
+						<div className="flex items-center space-x-2 sm:space-x-3">
+							<div className="w-8 h-8 sm:w-10 sm:h-10 bg-black rounded-lg flex items-center justify-center">
+								<img
+									src="/logo.jpg"
+									alt="Homiee Logo"
+									className="w-6 h-6 sm:w-8 sm:h-8"
+								/>
 							</div>
-							<h1 className="text-2xl font-bold text-gray-900">Homiee</h1>
+							<h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+								Homiee
+							</h1>
 						</div>
 
 						<a
 							href="https://forms.gle/zgSSwGhtosZLEM5M6"
 							target="_blank"
 							rel="noopener noreferrer"
-							className="inline-block px-4 py-3 bg-[#49548a] text-white font-semibold rounded-lg shadow hover:bg-blue-900 transition-colors"
+							className="inline-block px-3 py-2 sm:px-4 sm:py-3 bg-[#49548a] text-white font-semibold rounded-lg shadow hover:bg-blue-900 transition-colors text-sm sm:text-base"
 						>
-							+ Add a Flat
+							<span className="hidden sm:inline">+ Add a Flat</span>
+							<span className="sm:hidden">+ Add</span>
 						</a>
 					</div>
 				</div>
-			</header>
-
-			<main className="max-w-5xl mx-auto px-6 py-12">
+			</header>{" "}
+			<main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
 				{/* Hero Section */}
-				<div className="text-center mb-12">
-					<h2 className="text-3xl font-bold text-gray-900 mb-3">
+				<div className="text-center mb-8 sm:mb-12">
+					<h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 sm:mb-3">
 						Find your perfect home
 					</h2>
-					<p className="text-gray-600 text-lg max-w-2xl mx-auto">
+					<p className="text-gray-600 text-base sm:text-lg max-w-2xl mx-auto px-2">
 						Discover comfortable living spaces that match your preferences and
 						budget
 					</p>
-				</div>
-
+				</div>{" "}
 				{/* Search Form */}
-				<div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 mb-12">
+				<div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-8 mb-8 sm:mb-12">
 					{/* Loading indicator for data */}
 					{isLoadingData && (
-						<div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+						<div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg">
 							<div className="flex items-center text-blue-800">
 								<Loader2 className="w-4 h-4 animate-spin mr-2" />
 								<span className="text-sm">Loading form options...</span>
 							</div>
 						</div>
 					)}
-
 					{/* Error indicator */}
 					{dataLoadError && (
 						<div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -323,9 +334,8 @@ export default function FlatFinder() {
 								</button>
 							</div>
 						</div>
-					)}
-
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+					)}{" "}
+					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
 						{/* City Selection */}
 						<div className="space-y-2">
 							<label className="text-sm font-medium text-gray-700 block">
@@ -418,46 +428,45 @@ export default function FlatFinder() {
 								))}
 							</select>
 						</div>
-					</div>
-
+					</div>{" "}
 					{/* Search Button */}
-					<div className="mt-8 flex items-center justify-between gap-7">
+					<div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-7">
 						<button
 							onClick={handleSearch}
 							disabled={!selectedCity || isSearching || isLoadingData}
-							className="w-full bg-[#49548a] hover:bg-[#30375b] disabled:bg-gray-300 text-white h-12 rounded-xl font-medium transition-colors flex items-center justify-center"
+							className="w-full sm:flex-1 bg-[#49548a] hover:bg-[#30375b] disabled:bg-gray-300 text-white h-11 sm:h-12 rounded-xl font-medium transition-colors flex items-center justify-center"
 						>
 							{isSearching ? (
 								<>
 									<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-3"></div>
-									Searching...
+									<span className="text-sm sm:text-base">Searching...</span>
 								</>
 							) : (
 								<>
-									<Search className="w-4 h-4 mr-3" />
-									Search Flats
+									<Search className="w-4 h-4 mr-2 sm:mr-3" />
+									<span className="text-sm sm:text-base">Search Flats</span>
 								</>
 							)}
 						</button>
 						{hasActiveFilters && (
 							<button
 								onClick={clearAllFilters}
-								className="flex items-center text-sm text-gray-700 hover:text-black transition-colors"
+								className="flex items-center justify-center sm:justify-start text-sm text-gray-700 hover:text-black transition-colors py-2 sm:py-0"
 							>
 								<X className="w-4 h-4 mr-1" />
-								Clear
+								Clear Filters
 							</button>
 						)}
 					</div>
 				</div>
-
 				{/* Results Section */}
 				{showResults && (
-					<div className="space-y-6">
+					<div className="space-y-4 sm:space-y-6">
 						{/* Results Header */}
-						<div className="flex items-center justify-between">
-							<h3 className="text-xl font-semibold text-gray-900">
-								{filteredListings.length} flats found
+						<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
+							<h3 className="text-lg sm:text-xl font-semibold text-gray-900">
+								{filteredListings.length} flat
+								{filteredListings.length !== 1 ? "s" : ""} found
 							</h3>
 							{selectedCity && (
 								<div className="text-sm text-gray-500">
@@ -481,36 +490,38 @@ export default function FlatFinder() {
 								</button>
 							</div>
 						) : (
-							<div className="space-y-4">
+							<div className="space-y-3 sm:space-y-4">
 								{filteredListings.map((listing, index) => (
 									<div
 										key={index}
 										className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow rounded-xl overflow-hidden"
 									>
-										<div className="p-6">
-											<div className="flex items-start justify-between mb-4">
+										<div className="p-4 sm:p-6">
+											<div className="flex flex-col sm:flex-row sm:items-start justify-between mb-3 sm:mb-4 gap-3 sm:gap-0">
 												<div className="flex-1">
-													<h4 className="font-semibold text-gray-900 text-lg mb-2">
+													<h4 className="font-semibold text-gray-900 text-base sm:text-lg mb-2">
 														{listing.BHK} BHK in {listing["Sub region"]}
 													</h4>
-													<div className="flex items-center text-gray-500 text-sm mb-3">
-														<MapPin className="w-4 h-4 mr-1" />
-														{listing["Sub region"]}, {listing.City}
+													<div className="flex items-center text-gray-500 text-sm mb-2 sm:mb-3">
+														<MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
+														<span className="truncate">
+															{listing["Sub region"]}, {listing.City}
+														</span>
 													</div>
-													<div className="flex items-center text-xl font-bold text-gray-900">
-														<IndianRupee className="w-5 h-5 mr-1" />
+													<div className="flex items-center text-lg sm:text-xl font-bold text-gray-900">
+														<IndianRupee className="w-4 h-4 sm:w-5 sm:h-5 mr-1" />
 														{listing.Budget}
-														<span className="text-sm font-normal text-gray-500 ml-1">
+														<span className="text-xs sm:text-sm font-normal text-gray-500 ml-1">
 															/month
 														</span>
 													</div>
 												</div>
-												<div className="flex flex-col items-end space-y-2">
-													<span className="px-3 py-1 bg-blue-100 text-[#49548a] text-xs rounded-full">
+												<div className="flex flex-row sm:flex-col items-start sm:items-end space-x-2 sm:space-x-0 sm:space-y-2">
+													<span className="px-2 sm:px-3 py-1 bg-blue-100 text-[#49548a] text-xs rounded-full whitespace-nowrap">
 														{listing.Gender} preferred
 													</span>
 													{listing["Flatmate Req"] && (
-														<span className="px-3 py-1 bg-blue-100 text-[#49548a] text-xs rounded-full">
+														<span className="px-2 sm:px-3 py-1 bg-blue-100 text-[#49548a] text-xs rounded-full whitespace-nowrap">
 															{listing["Flatmate Req"]} flatmate
 															{parseInt(listing["Flatmate Req"]) > 1
 																? "s"
@@ -519,13 +530,12 @@ export default function FlatFinder() {
 														</span>
 													)}
 												</div>
-											</div>
-
+											</div>{" "}
 											<button
 												onClick={() => toggleListingDetails(index)}
-												className="w-full flex items-center justify-between p-3 border border-gray-200 hover:bg-blue-50 rounded-lg transition-colors"
+												className="w-full flex items-center justify-between p-2 sm:p-3 border border-gray-200 hover:bg-blue-50 rounded-lg transition-colors"
 											>
-												<span className="font-medium text-[#49548a]">
+												<span className="font-medium text-[#49548a] text-sm sm:text-base">
 													{expandedListing === index
 														? "Hide details"
 														: "View details"}
@@ -536,16 +546,15 @@ export default function FlatFinder() {
 													}`}
 												/>
 											</button>
-
 											{expandedListing === index && (
-												<div className="mt-4 p-4 bg-blue-50 rounded-lg">
-													<p className="text-gray-700 text-sm leading-relaxed mb-4">
+												<div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-blue-50 rounded-lg">
+													<p className="text-gray-700 text-sm leading-relaxed mb-3 sm:mb-4">
 														{listing.Message}
 													</p>
 													{extractContact(listing.Message) && (
 														<div className="flex items-center text-[#49548a] text-sm">
-															<Phone className="w-4 h-4 mr-2" />
-															<span className="font-mono">
+															<Phone className="w-4 h-4 mr-2 flex-shrink-0" />
+															<span className="font-mono break-all">
 																{extractContact(listing.Message)}
 															</span>
 														</div>

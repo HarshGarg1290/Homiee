@@ -147,36 +147,34 @@ export default function FlatmateForm() {
 					href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap"
 					rel="stylesheet"
 				/>
-			</Head>
-
+			</Head>{" "}
 			<header className="bg-white/90 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50 shadow-sm">
-				<div className="max-w-6xl mx-auto px-6 py-4">
+				<div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
 					<div className="flex items-center justify-between">
-						<div className="flex items-center space-x-3">
-							<div className="w-10 h-10 bg-black  rounded-lg flex items-center justify-center shadow-lg">
+						<div className="flex items-center space-x-2 sm:space-x-3">
+							<div className="w-8 h-8 sm:w-10 sm:h-10 bg-black rounded-lg flex items-center justify-center shadow-lg">
 								<img
 									src="/logo.jpg"
 									alt="Homiee Logo"
-									className="w-8 h-8 rounded"
+									className="w-6 h-6 sm:w-8 sm:h-8 rounded"
 								/>
 							</div>
-							<h1 className="text-2xl font-bold  bg-clip-text text-black">
+							<h1 className="text-xl sm:text-2xl font-bold bg-clip-text text-black">
 								Homiee
 							</h1>
 						</div>
 					</div>
 				</div>
-			</header>
-
+			</header>{" "}
 			<div className="flex flex-col items-center justify-center px-4 -mt-4 min-h-[calc(100vh-80px)]">
-				<div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12 w-full max-w-4xl">
+				<div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-6 sm:p-8 md:p-12 w-full max-w-4xl">
 					{loading && (
-						<div className="flex flex-col items-center justify-center py-16">
+						<div className="flex flex-col items-center justify-center py-12 sm:py-16">
 							<div className="relative">
-								<div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200"></div>
-								<div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent absolute top-0"></div>
+								<div className="animate-spin rounded-full h-12 w-12 sm:h-16 sm:w-16 border-4 border-blue-200"></div>
+								<div className="animate-spin rounded-full h-12 w-12 sm:h-16 sm:w-16 border-4 border-blue-600 border-t-transparent absolute top-0"></div>
 							</div>
-							<div className="text-blue-700 font-semibold mt-6 text-lg">
+							<div className="text-blue-700 font-semibold mt-4 sm:mt-6 text-base sm:text-lg">
 								Finding your perfect matches...
 							</div>
 						</div>
@@ -184,17 +182,17 @@ export default function FlatmateForm() {
 
 					{!submitted && !loading && (
 						<div>
-							<div className="text-center mb-8">
-								<h1 className="text-4xl font-bold text-[#49548a] mb-3 ">
+							<div className="text-center mb-6 sm:mb-8">
+								<h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#49548a] mb-2 sm:mb-3">
 									Find Your Perfect Flatmate
 								</h1>
-								<p className="text-gray-600 text-lg">
+								<p className="text-gray-600 text-base sm:text-lg px-2">
 									Tell us your preferences and we'll find your ideal living
 									companion!
 								</p>
 							</div>
-							<form onSubmit={handleSubmit} className="space-y-6">
-								<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+							<form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+								<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
 									<div className="space-y-2">
 										<label className="block text-sm font-semibold text-gray-800 mb-2">
 											🏙️ City
@@ -376,11 +374,10 @@ export default function FlatmateForm() {
 											))}
 										</select>
 									</div>
-								</div>
-
+								</div>{" "}
 								<button
 									type="submit"
-									className="w-full bg-[#49548a] hover:from-blue-700 hover:to-blue-800 text-white font-bold py-4 rounded-xl shadow-xl transition-all duration-300 text-lg mt-8 transform hover:scale-105"
+									className="w-full bg-[#49548a] hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3 sm:py-4 rounded-xl shadow-xl transition-all duration-300 text-base sm:text-lg mt-6 sm:mt-8 transform hover:scale-105"
 								>
 									Find My Perfect Flatmate
 								</button>
@@ -389,34 +386,35 @@ export default function FlatmateForm() {
 					)}
 
 					{submitted && !loading && matches.length > 0 && (
-						<div className=" space-y-6">
-							<h2 className="text-2xl font-bold text-center text-[#49548a] mb-6 ">
+						<div className="space-y-4 sm:space-y-6">
+							<h2 className="text-xl sm:text-2xl font-bold text-center text-[#49548a] mb-4 sm:mb-6">
 								🎯 Your Perfect Matches
 							</h2>
-							<div className="space-y-4">
+							<div className="space-y-3 sm:space-y-4">
+								{" "}
 								{matches.map(({ candidate, match_percentage }, idx) => (
 									<div
 										key={idx}
-										className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl shadow-lg p-4 border border-blue-100 hover:shadow-xl transition-all duration-300"
+										className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl shadow-lg p-3 sm:p-4 border border-blue-100 hover:shadow-xl transition-all duration-300"
 									>
-										<div className="flex justify-between items-start">
-											<div className="flex-1  space-y-3">
-												<div className="font-bold text-gray-900 text-lg sm:text-xl mb-2">
-													📍 {candidate.City} <br />{" "}
-													<span className="text-sm sm:text-md">
+										<div className="flex flex-col sm:flex-row justify-between items-start gap-3">
+											<div className="flex-1 space-y-2 sm:space-y-3">
+												<div className="font-bold text-gray-900 text-base sm:text-lg lg:text-xl mb-2">
+													📍 {candidate.City} <br />
+													<span className="text-sm sm:text-base">
 														{candidate.Locality}
 													</span>
 												</div>
 											</div>
 
-											<div className="ml-6 text-center">
-												<div className="bg-gradient-to-r from-[#49548a] to-blue-600 text-white font-bold sm:text-2xl px-2 py-1 sm:px-4 sm:py-2 rounded-xl shadow-lg">
+											<div className="ml-0 sm:ml-6 text-center sm:text-right">
+												<div className="bg-gradient-to-r from-[#49548a] to-blue-600 text-white font-bold text-lg sm:text-xl lg:text-2xl px-3 py-2 sm:px-4 sm:py-2 rounded-xl shadow-lg">
 													{match_percentage}% Match
 												</div>
 												<div className="text-sm text-gray-500 mt-1"></div>
 											</div>
 										</div>
-										<div className="grid grid-cols-1  md:grid-cols-2 gap-3 text-gray-600">
+										<div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-gray-600 text-sm sm:text-base">
 											<div className="sm:flex items-center space-x-2">
 												<span>{candidate.Gender === "Male" ? "👨" : "👩"}</span>
 												<span>{candidate.Gender}</span>
