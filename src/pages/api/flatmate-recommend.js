@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import Papa from "papaparse";
+import apiCache from "../../lib/cache.js";
 
 const budgetOrder = [
 	"<15000",
@@ -27,6 +28,22 @@ export default async function handler(req, res) {
 
 	try {
 		const user = req.body;
+		
+		// Check cache first
+		const cacheKey = apiCache.generateKey(user);
+		const cachedResult = apiCache.get(cacheKey);
+		
+		if (cachedResult) {
+			console.log("🚀 Cache hit! Returning cached results");
+			return res.status(200).json({
+				...cachedResult,
+				cached: true,
+				timestamp: new Date().toISOString()
+			});
+		}
+
+		console.log("💾 Cache miss, generating new results");
+		
 		const csvPath = path.join(
 			process.cwd(),
 			"public",
@@ -135,8 +152,18 @@ export default async function handler(req, res) {
 			}))
 			.filter((m) => m.match_percentage > 1)
 			.sort((a, b) => b.match_percentage - a.match_percentage);
+		// Update cache with new results
+		const result = { 
+			matches,
+			generated_at: new Date().toISOString(),
+			total_filtered: filteredCandidates.length,
+			cache_duration: "5 minutes"
+		};
+		
+		apiCache.set(cacheKey, result);
+		console.log(`💾 Cached ${matches.length} matches for user`);
 
-		res.status(200).json({ matches });
+		res.status(200).json(result);
 	} catch (error) {
 		console.error("API Error:", error);
 		res.status(500).json({
