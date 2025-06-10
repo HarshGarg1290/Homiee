@@ -9,6 +9,7 @@ import {
 	Phone,
 	X,
 	ChevronRight,
+	Loader2,
 } from "lucide-react";
 
 export default function FlatFinder() {
@@ -28,96 +29,142 @@ export default function FlatFinder() {
 	const [genderOptions, setGenderOptions] = useState([]);
 	const [budgetRanges, setBudgetRanges] = useState([]);
 
+	// Loading states for better UX
+	const [isLoadingData, setIsLoadingData] = useState(true);
+	const [dataLoadError, setDataLoadError] = useState(null);
+
+	// Cache to avoid repeated API calls
+	const [dataCache, setDataCache] = useState(null);
+
 	useEffect(() => {
-		fetch("/api/listings")
-			.then((response) => {
-				if (!response.ok) {
-					throw new Error(`API error: ${response.status}`);
-				}
-				return response.json();
-			})
-			.then((data) => {
-				// Check if data is an array before filtering
-				if (!Array.isArray(data)) {
-					console.error("Data is not an array:", data);
-					setListings([]); // Set to empty array as fallback
-					return;
-				}
+		// Check if we have cached data first
+		const cachedData = localStorage.getItem("flats-form-data");
+		const cacheTimestamp = localStorage.getItem("flats-form-data-timestamp");
+		const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
 
-				const filteredData = data.filter(
-					(listing) => listing.City && listing.Message
-				);
-				setListings(filteredData);
+		if (
+			cachedData &&
+			cacheTimestamp &&
+			Date.now() - parseInt(cacheTimestamp) < fiveMinutes
+		) {
+			// Use cached data
+			const parsed = JSON.parse(cachedData);
+			setCities(parsed.cities);
+			setGenderOptions(parsed.genderOptions);
+			setBudgetRanges(parsed.budgetRanges);
+			setListings(parsed.listings);
+			setIsLoadingData(false);
+			return;
+		}
 
-				// Extract unique cities and their subregions
-				const cityData = {};
-				const genderSet = new Set();
-				const budgetSet = new Set();
-
-				filteredData.forEach((listing) => {
-					// Extract cities and subregions
-					if (listing.City && listing.City.trim()) {
-						const city = listing.City.trim();
-						const subregion = listing["Sub region"]
-							? listing["Sub region"].trim()
-							: "";
-
-						if (!cityData[city]) {
-							cityData[city] = new Set();
-						}
-						if (subregion) {
-							cityData[city].add(subregion);
-						}
-					}
-
-					// Extract gender options
-					if (listing.Gender && listing.Gender.trim()) {
-						genderSet.add(listing.Gender.trim());
-					}
-
-					// Extract budget options
-					if (listing.Budget && listing.Budget.trim()) {
-						budgetSet.add(listing.Budget.trim());
-					}
-				});
-
-				// Convert Sets to arrays for city data
-				const formattedCities = {};
-				Object.keys(cityData).forEach((city) => {
-					formattedCities[city] = Array.from(cityData[city]);
-				});
-				setCities(formattedCities);
-
-				// Set gender options
-				setGenderOptions(Array.from(genderSet));
-
-				// Create budget ranges
-				const ranges = [
-					{
-						value: "0-15000",
-						label: "Under ₹15,000",
-						color: "bg-green-100 text-green-800",
-					},
-					{
-						value: "15000-25000",
-						label: "₹15,000 - ₹25,000",
-						color: "bg-blue-100 text-blue-800",
-					},
-					{
-						value: "25000-40000",
-						label: "₹25,000 - ₹40,000",
-						color: "bg-blue-100 text-blue-800", // Changed to blue theme
-					},
-					{
-						value: "40000+",
-						label: "Above ₹40,000",
-						color: "bg-blue-100 text-blue-800", // Changed to blue theme
-					},
-				];
-				setBudgetRanges(ranges);
-			})
-			.catch((error) => console.error("Error fetching listings:", error));
+		// Fetch fresh data
+		fetchFormData();
 	}, []);
+
+	const fetchFormData = async () => {
+		try {
+			setIsLoadingData(true);
+			setDataLoadError(null);
+
+			const response = await fetch("/api/listings");
+			if (!response.ok) {
+				throw new Error(`API error: ${response.status}`);
+			}
+
+			const data = await response.json();
+
+			// Check if data is an array
+			if (!Array.isArray(data)) {
+				throw new Error("Invalid data format received");
+			}
+
+			const filteredData = data.filter(
+				(listing) => listing.City && listing.Message
+			);
+
+			// Optimized data processing using Maps for better performance
+			const cityMap = new Map();
+			const genderSet = new Set();
+			const budgetSet = new Set();
+
+			filteredData.forEach((listing) => {
+				// Process cities and subregions more efficiently
+				if (listing.City?.trim()) {
+					const city = listing.City.trim();
+					const subregion = listing["Sub region"]?.trim() || "";
+
+					if (!cityMap.has(city)) {
+						cityMap.set(city, new Set());
+					}
+					if (subregion) {
+						cityMap.get(city).add(subregion);
+					}
+				}
+
+				// Process gender options
+				if (listing.Gender?.trim()) {
+					genderSet.add(listing.Gender.trim());
+				}
+
+				// Process budget options
+				if (listing.Budget?.trim()) {
+					budgetSet.add(listing.Budget.trim());
+				}
+			});
+
+			// Convert Maps to objects for state
+			const formattedCities = {};
+			cityMap.forEach((subregions, city) => {
+				formattedCities[city] = Array.from(subregions).sort();
+			});
+
+			// Create optimized budget ranges
+			const ranges = [
+				{
+					value: "0-15000",
+					label: "Under ₹15,000",
+					color: "bg-green-100 text-green-800",
+				},
+				{
+					value: "15000-25000",
+					label: "₹15,000 - ₹25,000",
+					color: "bg-blue-100 text-blue-800",
+				},
+				{
+					value: "25000-40000",
+					label: "₹25,000 - ₹40,000",
+					color: "bg-blue-100 text-blue-800",
+				},
+				{
+					value: "40000+",
+					label: "Above ₹40,000",
+					color: "bg-blue-100 text-blue-800",
+				},
+			];
+
+			// Set all data at once to minimize re-renders
+			const processedData = {
+				cities: formattedCities,
+				genderOptions: Array.from(genderSet).sort(),
+				budgetRanges: ranges,
+				listings: filteredData,
+			};
+
+			setCities(processedData.cities);
+			setGenderOptions(processedData.genderOptions);
+			setBudgetRanges(processedData.budgetRanges);
+			setListings(processedData.listings);
+
+			// Cache the processed data
+			localStorage.setItem("flats-form-data", JSON.stringify(processedData));
+			localStorage.setItem("flats-form-data-timestamp", Date.now().toString());
+		} catch (error) {
+			console.error("Error fetching listings:", error);
+			setDataLoadError(error.message);
+		} finally {
+			setIsLoadingData(false);
+		}
+	};
 
 	const clearAllFilters = () => {
 		setSelectedCity("");
@@ -177,7 +224,8 @@ export default function FlatFinder() {
 			}
 		}
 
-		await new Promise((resolve) => setTimeout(resolve, 800));
+		// Simulate search delay (remove this in production)
+		await new Promise((resolve) => setTimeout(resolve, 300));
 
 		setFilteredListings(results);
 		setIsSearching(false);
@@ -228,7 +276,7 @@ export default function FlatFinder() {
 							href="https://forms.gle/zgSSwGhtosZLEM5M6"
 							target="_blank"
 							rel="noopener noreferrer"
-							className="inline-block  px-4 py-3 bg-[#49548a] text-white font-semibold rounded-lg shadow hover:bg-blue-900 transition-colors"
+							className="inline-block px-4 py-3 bg-[#49548a] text-white font-semibold rounded-lg shadow hover:bg-blue-900 transition-colors"
 						>
 							+ Add a Flat
 						</a>
@@ -246,11 +294,37 @@ export default function FlatFinder() {
 						Discover comfortable living spaces that match your preferences and
 						budget
 					</p>
-					{/* Add Flat Button */}
 				</div>
 
 				{/* Search Form */}
 				<div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 mb-12">
+					{/* Loading indicator for data */}
+					{isLoadingData && (
+						<div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+							<div className="flex items-center text-blue-800">
+								<Loader2 className="w-4 h-4 animate-spin mr-2" />
+								<span className="text-sm">Loading form options...</span>
+							</div>
+						</div>
+					)}
+
+					{/* Error indicator */}
+					{dataLoadError && (
+						<div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+							<div className="flex items-center justify-between">
+								<span className="text-red-800 text-sm">
+									Error loading data: {dataLoadError}
+								</span>
+								<button
+									onClick={fetchFormData}
+									className="text-red-600 hover:text-red-800 text-sm underline"
+								>
+									Retry
+								</button>
+							</div>
+						</div>
+					)}
+
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 						{/* City Selection */}
 						<div className="space-y-2">
@@ -260,9 +334,12 @@ export default function FlatFinder() {
 							<select
 								value={selectedCity}
 								onChange={(e) => setSelectedCity(e.target.value)}
-								className="w-full h-11 px-3 text-black border border-gray-200 rounded-lg focus:border-gray-400 focus:outline-none bg-white"
+								disabled={isLoadingData}
+								className="w-full h-11 px-3 text-black border border-gray-200 rounded-lg focus:border-gray-400 focus:outline-none bg-white disabled:bg-gray-50 disabled:text-gray-400"
 							>
-								<option value="">Select city</option>
+								<option value="">
+									{isLoadingData ? "Loading cities..." : "Select city"}
+								</option>
 								{Object.keys(cities).map((city) => (
 									<option key={city} value={city}>
 										{city}
@@ -279,10 +356,16 @@ export default function FlatFinder() {
 							<select
 								value={selectedSubregion}
 								onChange={(e) => setSelectedSubregion(e.target.value)}
-								disabled={!selectedCity || !cities[selectedCity]?.length}
+								disabled={
+									!selectedCity ||
+									!cities[selectedCity]?.length ||
+									isLoadingData
+								}
 								className="w-full h-11 px-3 text-black border border-gray-200 rounded-lg focus:border-gray-400 focus:outline-none bg-white disabled:bg-gray-50 disabled:text-gray-400"
 							>
-								<option value="">Select area</option>
+								<option value="">
+									{isLoadingData ? "Loading areas..." : "Select area"}
+								</option>
 								{selectedCity &&
 									cities[selectedCity]?.map((subregion) => (
 										<option key={subregion} value={subregion}>
@@ -300,9 +383,12 @@ export default function FlatFinder() {
 							<select
 								value={selectedBudget}
 								onChange={(e) => setSelectedBudget(e.target.value)}
-								className="w-full h-11 px-3 text-black border border-gray-200 rounded-lg focus:border-gray-400 focus:outline-none bg-white"
+								disabled={isLoadingData}
+								className="w-full h-11 px-3 text-black border border-gray-200 rounded-lg focus:border-gray-400 focus:outline-none bg-white disabled:bg-gray-50 disabled:text-gray-400"
 							>
-								<option value="">Select budget</option>
+								<option value="">
+									{isLoadingData ? "Loading budgets..." : "Select budget"}
+								</option>
 								{budgetRanges.map((budget) => (
 									<option key={budget.value} value={budget.value}>
 										{budget.label}
@@ -319,9 +405,12 @@ export default function FlatFinder() {
 							<select
 								value={selectedGender}
 								onChange={(e) => setSelectedGender(e.target.value)}
-								className="w-full h-11 px-3 border text-black border-gray-200 rounded-lg focus:border-gray-400 focus:outline-none bg-white"
+								disabled={isLoadingData}
+								className="w-full h-11 px-3 border text-black border-gray-200 rounded-lg focus:border-gray-400 focus:outline-none bg-white disabled:bg-gray-50 disabled:text-gray-400"
 							>
-								<option value="">Any</option>
+								<option value="">
+									{isLoadingData ? "Loading options..." : "Any"}
+								</option>
 								{genderOptions.map((gender) => (
 									<option key={gender} value={gender}>
 										{gender}
@@ -335,7 +424,7 @@ export default function FlatFinder() {
 					<div className="mt-8 flex items-center justify-between gap-7">
 						<button
 							onClick={handleSearch}
-							disabled={!selectedCity || isSearching}
+							disabled={!selectedCity || isSearching || isLoadingData}
 							className="w-full bg-[#49548a] hover:bg-[#30375b] disabled:bg-gray-300 text-white h-12 rounded-xl font-medium transition-colors flex items-center justify-center"
 						>
 							{isSearching ? (

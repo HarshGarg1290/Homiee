@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import Papa from "papaparse";
+import apiCache from "../../lib/cache.js";
 
 const budgetOrder = [
 	"<15000",
@@ -18,6 +19,7 @@ function isBudgetClose(userBudget, candidateBudget) {
 }
 
 export default async function handler(req, res) {
+	const startTime = Date.now();
 	console.log("=== Flatmate Recommend API Called ===");
 	console.log("Method:", req.method);
 	console.log("Headers:", req.headers);
@@ -28,6 +30,24 @@ export default async function handler(req, res) {
 	try {
 		const user = req.body;
 		console.log("User data received:", JSON.stringify(user, null, 2));
+
+		// Check cache first
+		const cacheKey = apiCache.generateKey(user);
+		const cachedResult = apiCache.get(cacheKey);
+
+		if (cachedResult) {
+			const responseTime = Date.now() - startTime;
+			console.log(`🚀 Cache HIT! Response time: ${responseTime}ms`);
+			return res.status(200).json({
+				...cachedResult,
+				cache: {
+					hit: true,
+					responseTime: responseTime,
+				},
+			});
+		}
+
+		console.log("🔍 Cache MISS - Processing new request...");
 
 		const csvPath = path.join(
 			process.cwd(),
@@ -119,7 +139,6 @@ export default async function handler(req, res) {
 				);
 			}
 		}
-
 		const matches = filteredCandidates
 			.map((candidate, i) => ({
 				candidate,
@@ -128,7 +147,21 @@ export default async function handler(req, res) {
 			.filter((m) => m.match_percentage > 1)
 			.sort((a, b) => b.match_percentage - a.match_percentage);
 
-		res.status(200).json({ matches });
+		// Cache the result for future requests
+		const result = { matches };
+		apiCache.set(cacheKey, result);
+
+		const responseTime = Date.now() - startTime;
+		console.log(`⚡ Cache STORED! Response time: ${responseTime}ms`);
+
+		res.status(200).json({
+			...result,
+			cache: {
+				hit: false,
+				responseTime: responseTime,
+				stored: true,
+			},
+		});
 	} catch (error) {
 		console.error("API Error:", error);
 		res.status(500).json({

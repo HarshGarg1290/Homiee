@@ -160,14 +160,20 @@ def encode_features(user_data, flatmate_data):
                     feature_dict[feature_name] = 1
                     logger.info(f"✅ Set candidate feature: {feature_name}")
                 else:
-                    logger.warning(f"❌ Feature not found in model: {feature_name}")
-          # Add interaction features that the enhanced model expects
+                    logger.warning(f"❌ Feature not found in model: {feature_name}")        # Add interaction features that the enhanced model expects
         # Same city interaction
         user_city = user_data.get('City', '')
         cand_city = flatmate_data.get('City', '')
         if user_city == cand_city and user_city:
             feature_dict['SameCity'] = 1
             logger.info(f"✅ Set interaction feature: SameCity")
+        
+        # Same locality interaction
+        user_locality = user_data.get('Locality', '')
+        cand_locality = flatmate_data.get('Locality', '')
+        if user_locality == cand_locality and user_locality:
+            feature_dict['SameLocality'] = 1
+            logger.info(f"✅ Set interaction feature: SameLocality")
         
         # Same budget interaction
         user_budget = user_data.get('Budget', '')
@@ -246,8 +252,28 @@ def predict_compatibility():
         flatmate_data = data.get('flatmate', {})
         
         if not user_data or not flatmate_data:
-            return jsonify({"error": "Both user and flatmate data required"}), 400
-          # Encode features
+            return jsonify({"error": "Both user and flatmate data required"}), 400        # Check for perfect match before ML prediction
+        is_perfect_match = (
+            user_data.get('City') == flatmate_data.get('City') and
+            user_data.get('Locality') == flatmate_data.get('Locality') and
+            user_data.get('Budget') == flatmate_data.get('Budget') and
+            user_data.get('Eating Preference') == flatmate_data.get('Eating Preference') and
+            user_data.get('Cleanliness Spook') == flatmate_data.get('Cleanliness Spook') and
+            user_data.get('Smoke/Drink') == flatmate_data.get('Smoke/Drink') and
+            user_data.get('Saturday Twin') == flatmate_data.get('Saturday Twin') and
+            user_data.get('Guest/Host') == flatmate_data.get('Guest/Host') and
+            user_data.get('Gender') == flatmate_data.get('Gender')
+        )
+        
+        if is_perfect_match:
+            logger.info("🎯 PERFECT MATCH DETECTED! Returning 100%")
+            return jsonify({
+                "compatibility_score": 100.0,
+                "confidence": "high",
+                "model_used": "perfect_match_detection"
+            })
+            
+        # Encode features
         features = encode_features(user_data, flatmate_data)
         
         # Make prediction
