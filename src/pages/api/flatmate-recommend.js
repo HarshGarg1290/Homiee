@@ -1,7 +1,6 @@
 import fs from "fs";
 import path from "path";
 import Papa from "papaparse";
-import apiCache from "../../lib/cache.js";
 
 const budgetOrder = [
 	"<15000",
@@ -15,40 +14,27 @@ const budgetOrder = [
 function isBudgetClose(userBudget, candidateBudget) {
 	const userIdx = budgetOrder.indexOf(userBudget);
 	const candIdx = budgetOrder.indexOf(candidateBudget);
-
-	// Only allow exact match or 1 tier difference
-	// e.g., 15k-20k can match with <15k, 15k-20k, or 20k-25k
-	// but NOT with 40k+
-	const difference = Math.abs(userIdx - candIdx);
-	return difference <= 1;
+	return Math.abs(userIdx - candIdx) <= 1;
 }
 
 export default async function handler(req, res) {
+	console.log("=== Flatmate Recommend API Called ===");
+	console.log("Method:", req.method);
+	console.log("Headers:", req.headers);
+	console.log("Environment:", process.env.NODE_ENV);
+
 	if (req.method !== "POST") return res.status(405).end();
 
 	try {
 		const user = req.body;
-		
-		// Check cache first
-		const cacheKey = apiCache.generateKey(user);
-		const cachedResult = apiCache.get(cacheKey);
-		
-		if (cachedResult) {
-			console.log("🚀 Cache hit! Returning cached results");
-			return res.status(200).json({
-				...cachedResult,
-				cached: true,
-				timestamp: new Date().toISOString()
-			});
-		}
+		console.log("User data received:", JSON.stringify(user, null, 2));
 
-		console.log("💾 Cache miss, generating new results");
-		
 		const csvPath = path.join(
 			process.cwd(),
 			"public",
 			"fake_flatmate_dataset_600_with_gender.csv"
 		);
+		console.log("Looking for CSV at:", csvPath);
 
 		if (!fs.existsSync(csvPath)) {
 			throw new Error(`CSV file not found at: ${csvPath}`);
@@ -59,53 +45,44 @@ export default async function handler(req, res) {
 			header: true,
 			skipEmptyLines: true,
 		});
+		console.log("Found candidates:", candidates.length);
 
-		// STRICT filtering: exact city, locality, gender, and close budget
-		const filteredCandidates = candidates.filter((c) => {
-			// Must have exact matches for these critical fields
-			const exactMatch =
+		const filteredCandidates = candidates.filter(
+			(c) =>
 				c.City === user.City &&
 				c.Locality === user.Locality &&
-				c.Gender === user.Gender;
+				c.Gender === user.Gender &&
+				isBudgetClose(user.Budget, c.Budget)
+		);
+		console.log("Filtered candidates:", filteredCandidates.length);
 
-			// Budget must be close (within 1 tier)
-			const budgetMatch = isBudgetClose(user.Budget, c.Budget);
-
-			return exactMatch && budgetMatch;
-		});
 		if (filteredCandidates.length === 0) {
-			console.log(
-				`No candidates found for ${user.City}, ${user.Locality}, ${user.Gender}, budget: ${user.Budget}`
-			);
+			console.log("No candidates found, returning empty matches");
 			return res.status(200).json({ matches: [] });
 		}
 
-		console.log(
-			`Found ${filteredCandidates.length} candidates after strict filtering`
-		);
-
-		// Create pairs with correct field mapping for the enhanced ML model
 		const pairs = filteredCandidates.map((candidate) => ({
 			User_City: user.City,
 			User_Locality: user.Locality,
 			User_Budget: user.Budget,
-			"User_Eating Preference": user["Eating Preference"],
-			"User_Cleanliness Spook": user["Cleanliness Spook"],
-			"User_Smoke/Drink": user["Smoke/Drink"],
-			"User_Saturday Twin": user["Saturday Twin"],
-			"User_Guest/Host": user["Guest/Host"],
+			User_Eating: user["Eating Preference"],
+			User_Cleanliness: user["Cleanliness Spook"],
+			User_SmokeDrink: user["Smoke/Drink"],
+			User_Saturday: user["Saturday Twin"],
+			User_GuestHost: user["Guest/Host"],
 			User_Gender: user.Gender,
 			Cand_City: candidate.City,
 			Cand_Locality: candidate.Locality,
 			Cand_Budget: candidate.Budget,
-			"Cand_Eating Preference": candidate["Eating Preference"],
-			"Cand_Cleanliness Spook": candidate["Cleanliness Spook"],
-			"Cand_Smoke/Drink": candidate["Smoke/Drink"],
-			"Cand_Saturday Twin": candidate["Saturday Twin"],
-			"Cand_Guest/Host": candidate["Guest/Host"],
+			Cand_Eating: candidate["Eating Preference"],
+			Cand_Cleanliness: candidate["Cleanliness Spook"],
+			Cand_SmokeDrink: candidate["Smoke/Drink"],
+			Cand_Saturday: candidate["Saturday Twin"],
+			Cand_GuestHost: candidate["Guest/Host"],
 			Cand_Gender: candidate.Gender,
 		})); // Get predictions from the appropriate endpoint
 		let match_percentages;
+
 		// Skip ML predictions during build time
 		if (process.env.NODE_ENV === "production" && !req.headers.host) {
 			console.log("Build time detected, using fallback predictions");
@@ -114,11 +91,10 @@ export default async function handler(req, res) {
 			try {
 				// Determine the base URL for API calls
 				const protocol = req.headers["x-forwarded-proto"] || "http";
-				const host = req.headers.host;
+				const host = req.headers.host || "localhost:3000";
 				const baseUrl = `${protocol}://${host}`;
 
 				console.log("Calling prediction API at:", `${baseUrl}/api/predict`);
-				console.log("Request host header:", host);
 
 				const resp = await fetch(`${baseUrl}/api/predict`, {
 					method: "POST",
@@ -152,18 +128,8 @@ export default async function handler(req, res) {
 			}))
 			.filter((m) => m.match_percentage > 1)
 			.sort((a, b) => b.match_percentage - a.match_percentage);
-		// Update cache with new results
-		const result = { 
-			matches,
-			generated_at: new Date().toISOString(),
-			total_filtered: filteredCandidates.length,
-			cache_duration: "5 minutes"
-		};
-		
-		apiCache.set(cacheKey, result);
-		console.log(`💾 Cached ${matches.length} matches for user`);
 
-		res.status(200).json(result);
+		res.status(200).json({ matches });
 	} catch (error) {
 		console.error("API Error:", error);
 		res.status(500).json({
