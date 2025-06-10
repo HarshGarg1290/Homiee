@@ -40,4 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# testing files
+test_*.py
+analyze_dataset.py
+
 /google-cred.json
+.vercel

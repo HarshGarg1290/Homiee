@@ -1,40 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# Homie - Flatmate Matching Platform
+
+A Next.js application that uses machine learning to match compatible flatmates based on lifestyle preferences and requirements.
+
+## Features
+
+- **Intelligent Matching**: ML-powered compatibility scoring using trained Random Forest model
+- **Comprehensive Filtering**: City, locality, budget, and lifestyle preference filtering
+- **Real-time Predictions**: Python-based ML model integration with Next.js API routes
+- **Responsive UI**: Modern interface built with Tailwind CSS and Radix UI components
+
+## Tech Stack
+
+- **Frontend**: Next.js 15, React 19, Tailwind CSS v4
+- **Backend**: Next.js API Routes, Python ML integration
+- **ML Model**: scikit-learn Random Forest Regressor
+- **Deployment**: Vercel with Python serverless functions
+
+## Project Structure
+
+```
+├── src/pages/              # Next.js pages and API routes
+├── src/components/ui/      # Reusable UI components
+├── api/                    # Python serverless functions
+├── model/                  # Trained ML model files (.pkl)
+├── public/                 # Static assets and dataset
+├── ml_predict.py          # Python ML prediction script
+└── requirements.txt       # Python dependencies
+```
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Node.js 16+
+- Python 3.8+
+- npm or yarn
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Installation
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+1. Clone the repository
+2. Install dependencies:
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+   ```bash
+   npm install
+   pip install -r requirements.txt
+   ```
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+3. Run the development server:
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+   ```bash
+   npm run dev
+   ```
 
-## Learn More
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-To learn more about Next.js, take a look at the following resources:
+## ML Model
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+The application uses a pre-trained Random Forest model that predicts flatmate compatibility based on:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Location preferences (city, locality)
+- Budget compatibility
+- Lifestyle factors (eating habits, cleanliness, social preferences)
+- Gender preferences
 
-## Deploy on Vercel
+Model files:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `model/flatmate_match_model.pkl` - Trained Random Forest model
+- `model/flatmate_model_columns.pkl` - Feature columns for encoding
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+## Deployment
+
+### Vercel (Recommended)
+
+1. Install Vercel CLI:
+
+   ```bash
+   npm i -g vercel
+   ```
+
+2. Deploy:
+   ```bash
+   vercel --prod
+   ```
+
+The Python ML model will automatically work as serverless functions on Vercel.
+
+## API Endpoints
+
+- `POST /api/flatmate-recommend` - Get flatmate recommendations
+- `POST /api/predict` - ML prediction endpoint (development: JavaScript, production: Python)
+
+## Environment Variables
+
+Create a `.env.local` file with any required environment variables.
+
+## License
+
+MIT License
