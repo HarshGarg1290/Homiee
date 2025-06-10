@@ -1,6 +1,5 @@
 import os
 import joblib
-import pandas as pd
 import json
 from http.server import BaseHTTPRequestHandler
 
@@ -17,14 +16,33 @@ except Exception as e:
     columns = None
 
 def predict_matches(data):
-    """Predict flatmate compatibility matches"""
+    """Predict flatmate compatibility matches without pandas"""
     if clf is None or columns is None:
         raise Exception("Model not loaded properly")
     
-    df = pd.DataFrame(data)
-    df_encoded = pd.get_dummies(df)
-    df_encoded = df_encoded.reindex(columns=columns, fill_value=0)
-    percentages = clf.predict(df_encoded).round().astype(int).tolist()
+    # Convert data to feature matrix manually (avoiding pandas)
+    import numpy as np
+    
+    # Create feature matrix
+    feature_matrix = []
+    for row in data:
+        # Create one-hot encoded features
+        feature_row = [0] * len(columns)
+        
+        # Fill in the features based on the column names
+        for key, value in row.items():
+            # Look for exact matches and categorical combinations
+            for i, col in enumerate(columns):
+                if f"{key}_{value}" == col or key == col:
+                    feature_row[i] = 1
+        
+        feature_matrix.append(feature_row)
+    
+    # Convert to numpy array
+    X = np.array(feature_matrix)
+    
+    # Get predictions
+    percentages = clf.predict(X).round().astype(int).tolist()
     return percentages
 
 class handler(BaseHTTPRequestHandler):
