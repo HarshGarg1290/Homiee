@@ -110,8 +110,7 @@ def encode_features(user_data, flatmate_data):
         
         # Create feature dictionary
         feature_dict = {}
-        
-        # Process user data with correct enhanced model naming convention
+          # Process user data with correct enhanced model naming convention
         for key, value in user_data.items():
             if isinstance(value, str) and value.strip():
                 # Map column names to match enhanced model format exactly
@@ -125,10 +124,17 @@ def encode_features(user_data, flatmate_data):
                     feature_name = f"User_Saturday_{value}"
                 elif key == "Guest/Host":
                     feature_name = f"User_GuestHost_{value}"
+                elif key == "Budget":
+                    feature_name = f"User_Budget_{value}"
                 else:
                     feature_name = f"User_{key}_{value}"
-                feature_dict[feature_name] = 1
-                logger.info(f"Set user feature: {feature_name}")
+                
+                # Only add if this feature exists in the model
+                if feature_name in model_columns:
+                    feature_dict[feature_name] = 1
+                    logger.info(f"✅ Set user feature: {feature_name}")
+                else:
+                    logger.warning(f"❌ Feature not found in model: {feature_name}")
         
         # Process flatmate data with correct enhanced model naming convention
         for key, value in flatmate_data.items():
@@ -144,9 +150,17 @@ def encode_features(user_data, flatmate_data):
                     feature_name = f"Cand_Saturday_{value}"
                 elif key == "Guest/Host":
                     feature_name = f"Cand_GuestHost_{value}"
+                elif key == "Budget":
+                    feature_name = f"Cand_Budget_{value}"
                 else:
                     feature_name = f"Cand_{key}_{value}"
-                feature_dict[feature_name] = 1
+                    
+                # Only add if this feature exists in the model
+                if feature_name in model_columns:
+                    feature_dict[feature_name] = 1
+                    logger.info(f"✅ Set candidate feature: {feature_name}")
+                else:
+                    logger.warning(f"❌ Feature not found in model: {feature_name}")
         
         # Add interaction features that the enhanced model expects
         # Same city interaction

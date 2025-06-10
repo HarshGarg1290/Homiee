@@ -60,25 +60,24 @@ export default async function handler(req, res) {
 			console.log("No candidates found, returning empty matches");
 			return res.status(200).json({ matches: [] });
 		}
-
 		const pairs = filteredCandidates.map((candidate) => ({
 			User_City: user.City,
 			User_Locality: user.Locality,
-			User_Budget: user.Budget,
-			User_Eating: user["Eating Preference"],
-			User_Cleanliness: user["Cleanliness Spook"],
-			User_SmokeDrink: user["Smoke/Drink"],
-			User_Saturday: user["Saturday Twin"],
-			User_GuestHost: user["Guest/Host"],
+			User_Budget: user.Budget || user["Budget Preference"], // Handle both field names
+			"User_Eating Preference": user["Eating Preference"],
+			"User_Cleanliness Spook": user["Cleanliness Spook"],
+			"User_Smoke/Drink": user["Smoke/Drink"],
+			"User_Saturday Twin": user["Saturday Twin"],
+			"User_Guest/Host": user["Guest/Host"],
 			User_Gender: user.Gender,
 			Cand_City: candidate.City,
 			Cand_Locality: candidate.Locality,
-			Cand_Budget: candidate.Budget,
-			Cand_Eating: candidate["Eating Preference"],
-			Cand_Cleanliness: candidate["Cleanliness Spook"],
-			Cand_SmokeDrink: candidate["Smoke/Drink"],
-			Cand_Saturday: candidate["Saturday Twin"],
-			Cand_GuestHost: candidate["Guest/Host"],
+			Cand_Budget: candidate.Budget || candidate["Budget Preference"],
+			"Cand_Eating Preference": candidate["Eating Preference"],
+			"Cand_Cleanliness Spook": candidate["Cleanliness Spook"],
+			"Cand_Smoke/Drink": candidate["Smoke/Drink"],
+			"Cand_Saturday Twin": candidate["Saturday Twin"],
+			"Cand_Guest/Host": candidate["Guest/Host"],
 			Cand_Gender: candidate.Gender,
 		})); // Get predictions from the appropriate endpoint
 		let match_percentages;
