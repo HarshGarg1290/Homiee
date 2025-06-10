@@ -1,6 +1,7 @@
 import os
 import joblib
 import json
+import numpy as np
 from http.server import BaseHTTPRequestHandler
 
 # Load model files once when the serverless function initializes
@@ -10,39 +11,60 @@ columns_path = os.path.join(os.path.dirname(__file__), '..', 'model', 'flatmate_
 try:
     clf = joblib.load(model_path)
     columns = joblib.load(columns_path)
+    print(f"Model loaded successfully. Features: {len(columns)}")
 except Exception as e:
     print(f"Error loading model: {e}")
     clf = None
     columns = None
 
+def create_feature_vector(data_row, feature_columns):
+    """Create feature vector without pandas"""
+    feature_vector = [0] * len(feature_columns)
+    
+    # Map data_row keys to feature columns
+    for key, value in data_row.items():
+        # Handle categorical features (one-hot encoded)
+        feature_name = f"{key}_{value}"
+        if feature_name in feature_columns:
+            idx = feature_columns.index(feature_name)
+            feature_vector[idx] = 1
+        # Handle direct numeric features
+        elif key in feature_columns:
+            idx = feature_columns.index(key)
+            try:
+                feature_vector[idx] = float(value)
+            except:
+                feature_vector[idx] = 1
+    
+    return feature_vector
+
 def predict_matches(data):
-    """Predict flatmate compatibility matches without pandas"""
+    """Predict flatmate compatibility matches using the trained model"""
     if clf is None or columns is None:
         raise Exception("Model not loaded properly")
     
-    # Convert data to feature matrix manually (avoiding pandas)
-    import numpy as np
+    # Convert columns to list for easier indexing
+    feature_columns = list(columns)
     
     # Create feature matrix
     feature_matrix = []
-    for row in data:
-        # Create one-hot encoded features
-        feature_row = [0] * len(columns)
-        
-        # Fill in the features based on the column names
-        for key, value in row.items():
-            # Look for exact matches and categorical combinations
-            for i, col in enumerate(columns):
-                if f"{key}_{value}" == col or key == col:
-                    feature_row[i] = 1
-        
-        feature_matrix.append(feature_row)
+    for data_row in data:
+        feature_vector = create_feature_vector(data_row, feature_columns)
+        feature_matrix.append(feature_vector)
     
     # Convert to numpy array
     X = np.array(feature_matrix)
     
-    # Get predictions
-    percentages = clf.predict(X).round().astype(int).tolist()
+    # Get predictions from your trained model
+    predictions = clf.predict(X)
+    
+    # Convert to percentages and ensure they're in reasonable range
+    percentages = []
+    for pred in predictions:
+        # Ensure prediction is between 1-100
+        percentage = max(1, min(100, int(round(pred))))
+        percentages.append(percentage)
+    
     return percentages
 
 class handler(BaseHTTPRequestHandler):
