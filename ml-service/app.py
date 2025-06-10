@@ -161,19 +161,62 @@ def encode_features(user_data, flatmate_data):
                     logger.info(f"✅ Set candidate feature: {feature_name}")
                 else:
                     logger.warning(f"❌ Feature not found in model: {feature_name}")
-        
-        # Add interaction features that the enhanced model expects
+          # Add interaction features that the enhanced model expects
         # Same city interaction
         user_city = user_data.get('City', '')
         cand_city = flatmate_data.get('City', '')
         if user_city == cand_city and user_city:
-            feature_dict[f'SameCity_{user_city}'] = 1
+            feature_dict['SameCity'] = 1
+            logger.info(f"✅ Set interaction feature: SameCity")
         
         # Same budget interaction
         user_budget = user_data.get('Budget', '')
         cand_budget = flatmate_data.get('Budget', '')
         if user_budget == cand_budget and user_budget:
-            feature_dict[f'SameBudget_{user_budget}'] = 1
+            feature_dict['SameBudget'] = 1
+            logger.info(f"✅ Set interaction feature: SameBudget")
+        
+        # Same eating preference interaction
+        user_eating = user_data.get('Eating Preference', '')
+        cand_eating = flatmate_data.get('Eating Preference', '')
+        if user_eating == cand_eating and user_eating:
+            feature_dict['SameEating'] = 1
+            logger.info(f"✅ Set interaction feature: SameEating")
+        
+        # Same cleanliness interaction
+        user_cleanliness = user_data.get('Cleanliness Spook', '')
+        cand_cleanliness = flatmate_data.get('Cleanliness Spook', '')
+        if user_cleanliness == cand_cleanliness and user_cleanliness:
+            feature_dict['SameCleanliness'] = 1
+            logger.info(f"✅ Set interaction feature: SameCleanliness")
+        
+        # Same smoke/drink interaction
+        user_smoke = user_data.get('Smoke/Drink', '')
+        cand_smoke = flatmate_data.get('Smoke/Drink', '')
+        if user_smoke == cand_smoke and user_smoke:
+            feature_dict['SameSmokeDrink'] = 1
+            logger.info(f"✅ Set interaction feature: SameSmokeDrink")
+        
+        # Same gender interaction
+        user_gender = user_data.get('Gender', '')
+        cand_gender = flatmate_data.get('Gender', '')
+        if user_gender == cand_gender and user_gender:
+            feature_dict['SameGender'] = 1
+            logger.info(f"✅ Set interaction feature: SameGender")
+        
+        # Same Saturday preference interaction
+        user_saturday = user_data.get('Saturday Twin', '')
+        cand_saturday = flatmate_data.get('Saturday Twin', '')
+        if user_saturday == cand_saturday and user_saturday:
+            feature_dict['SameSaturday'] = 1
+            logger.info(f"✅ Set interaction feature: SameSaturday")
+        
+        # Same guest/host preference interaction
+        user_guest = user_data.get('Guest/Host', '')
+        cand_guest = flatmate_data.get('Guest/Host', '')
+        if user_guest == cand_guest and user_guest:
+            feature_dict['SameGuestHost'] = 1
+            logger.info(f"✅ Set interaction feature: SameGuestHost")
         
         # Debug: Print some of the features being set
         matched_features = sum(1 for col in model_columns if col in feature_dict)
@@ -204,18 +247,21 @@ def predict_compatibility():
         
         if not user_data or not flatmate_data:
             return jsonify({"error": "Both user and flatmate data required"}), 400
-        
-        # Encode features
+          # Encode features
         features = encode_features(user_data, flatmate_data)
         
         # Make prediction
         prediction = model.predict(features)[0]  # Use predict() for regression
         compatibility_score = float(prediction)
         
+        # Debug logging
+        logger.info(f"Raw prediction from model: {prediction}")
+        logger.info(f"Compatibility score: {compatibility_score}")
+        
         # Ensure score is between 0-100
         compatibility_percentage = max(0, min(100, round(compatibility_score, 2)))
         
-        logger.info(f"Prediction made: {compatibility_percentage}%")
+        logger.info(f"Final prediction returned: {compatibility_percentage}%")
         
         return jsonify({
             "compatibility_score": compatibility_percentage,
