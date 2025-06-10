@@ -43,6 +43,11 @@ next-env.d.ts
 # testing files
 test_*.py
 analyze_dataset.py
+*_test.py
+*_new.*
 
+# credentials and temp files
 /google-cred.json
 .vercel
+*.log
+deploy-*.sh
