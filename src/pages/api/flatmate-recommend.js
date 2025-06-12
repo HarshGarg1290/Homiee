@@ -48,11 +48,10 @@ export default async function handler(req, res) {
 		}
 
 		console.log("🔍 Cache MISS - Processing new request...");
-
 		const csvPath = path.join(
 			process.cwd(),
 			"public",
-			"fake_flatmate_dataset_600_with_gender.csv"
+			"enhanced_flatmate_dataset.csv"
 		);
 		console.log("Looking for CSV at:", csvPath);
 
@@ -66,12 +65,12 @@ export default async function handler(req, res) {
 			skipEmptyLines: true,
 		});
 		console.log("Found candidates:", candidates.length);
-
 		const filteredCandidates = candidates.filter(
 			(c) =>
 				c.City === user.City &&
 				c.Locality === user.Locality &&
-				c.Gender === user.Gender &&
+				// Remove the gender filter - people often look for flatmates of any gender
+				// c.Gender === user.Gender &&
 				isBudgetClose(user.Budget, c.Budget)
 		);
 		console.log("Filtered candidates:", filteredCandidates.length);

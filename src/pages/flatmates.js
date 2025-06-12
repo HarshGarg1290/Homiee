@@ -391,43 +391,57 @@ export default function FlatmateForm() {
 								🎯 Your Perfect Matches
 							</h2>
 							<div className="space-y-3 sm:space-y-4">
-								{" "}
-								{matches.map(({ candidate, match_percentage }, idx) => (
+								{" "}								{matches.map(({ candidate, match_percentage }, idx) => (
 									<div
 										key={idx}
-										className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl shadow-lg p-3 sm:p-4 border border-blue-100 hover:shadow-xl transition-all duration-300"
+										className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl shadow-lg p-4 sm:p-6 border border-blue-100 hover:shadow-xl transition-all duration-300"
 									>
-										<div className="flex flex-col sm:flex-row justify-between items-start gap-3">
-											<div className="flex-1 space-y-2 sm:space-y-3">
-												<div className="font-bold text-gray-900 text-base sm:text-lg lg:text-xl mb-2">
-													📍 {candidate.City} <br />
-													<span className="text-sm sm:text-base">
-														{candidate.Locality}
-													</span>
+										{/* Header with profile photo, name, and match percentage */}
+										<div className="flex items-center justify-between mb-4">
+											<div className="flex items-center space-x-3 sm:space-x-4">
+												<div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden border-3 border-white shadow-lg flex-shrink-0">
+													<img
+														src={candidate.ProfilePhoto}
+														alt={`${candidate.Name}'s profile`}
+														className="w-full h-full object-cover"
+														onError={(e) => {
+															e.target.src = `https://ui-avatars.com/api/?name=${candidate.Name}&background=49548a&color=fff&size=80`;
+														}}
+													/>
+												</div>
+												<div>
+													<h3 className="font-bold text-gray-900 text-lg sm:text-xl">
+														{candidate.Name}
+													</h3>
+													<p className="text-gray-600 text-sm sm:text-base">
+														{candidate.Age} years old
+													</p>
+													<p className="text-gray-500 text-sm">
+														📍 {candidate.City}, {candidate.Locality}
+													</p>
 												</div>
 											</div>
-
-											<div className="ml-0 sm:ml-6 text-center sm:text-right">
-												<div className="bg-gradient-to-r from-[#49548a] to-blue-600 text-white font-bold text-lg sm:text-xl lg:text-2xl px-3 py-2 sm:px-4 sm:py-2 rounded-xl shadow-lg">
+											<div className="text-center">
+												<div className="bg-gradient-to-r from-[#49548a] to-blue-600 text-white font-bold text-lg sm:text-xl px-4 py-2 rounded-xl shadow-lg">
 													{match_percentage}% Match
 												</div>
-												<div className="text-sm text-gray-500 mt-1"></div>
 											</div>
 										</div>
-										<div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-gray-600 text-sm sm:text-base">
-											<div className="sm:flex items-center space-x-2">
-												<span>{candidate.Gender === "Male" ? "👨" : "👩"}</span>
-												<span>{candidate.Gender}</span>
+
+										{/* Profile details grid */}
+										<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-gray-700 text-sm sm:text-base">
+											<div className="flex items-center space-x-2 bg-white/60 rounded-lg p-2 sm:p-3">
+												<span>{candidate.Gender === "Male" ? "👨‍💼" : "👩‍💼"}</span>
+												<span className="font-medium">{candidate.Gender}</span>
 												<span className="text-gray-400">•</span>
-												<span>💸 ₹{candidate.Budget}</span>
+												<span className="font-semibold text-green-600">₹{candidate.Budget}</span>
 											</div>
 
-											<div className="flex items-center space-x-2">
+											<div className="flex items-center space-x-2 bg-white/60 rounded-lg p-2 sm:p-3">
 												<span>
 													{candidate["Eating Preference"] === "Vegetarian"
-														? "🥦"
-														: candidate["Eating Preference"] ===
-														  "Non Vegetarian"
+														? "🥬"
+														: candidate["Eating Preference"] === "Non Vegetarian"
 														? "🍗"
 														: candidate["Eating Preference"] === "Vegan"
 														? "🥗"
@@ -435,15 +449,15 @@ export default function FlatmateForm() {
 														? "🐟"
 														: "🍳"}
 												</span>
-												<span>{candidate["Eating Preference"]}</span>
+												<span className="font-medium">{candidate["Eating Preference"]}</span>
 											</div>
 
-											<div className="flex items-center space-x-2">
+											<div className="flex items-center space-x-2 bg-white/60 rounded-lg p-2 sm:p-3">
 												<span>🧹</span>
-												<span>{candidate["Cleanliness Spook"]}</span>
+												<span className="font-medium">{candidate["Cleanliness Spook"]}</span>
 											</div>
 
-											<div className="flex items-center space-x-2">
+											<div className="flex items-center space-x-2 bg-white/60 rounded-lg p-2 sm:p-3">
 												<span>
 													{candidate["Smoke/Drink"] === "Both"
 														? "🚬🍻"
@@ -453,36 +467,40 @@ export default function FlatmateForm() {
 														? "🍻"
 														: "🚫"}
 												</span>
-												<span>
+												<span className="font-medium">
 													{candidate["Smoke/Drink"] === "Neither"
 														? "Clean lifestyle"
 														: candidate["Smoke/Drink"]}
 												</span>
 											</div>
 
-											<div className="flex items-center space-x-2">
+											<div className="flex items-center space-x-2 bg-white/60 rounded-lg p-2 sm:p-3">
 												<span>
 													{candidate["Saturday Twin"] === "House Party Scenes"
 														? "🎉"
-														: candidate["Saturday Twin"] ===
-														  "Clubbing/Going Out"
+														: candidate["Saturday Twin"] === "Clubbing/Going Out"
 														? "🕺"
-														: candidate["Saturday Twin"] ===
-														  "Chill stay at home"
+														: candidate["Saturday Twin"] === "Chill stay at home"
 														? "🏡"
 														: "🎲"}
 												</span>
-												<span>{candidate["Saturday Twin"]}</span>
+												<span className="font-medium">{candidate["Saturday Twin"]}</span>
 											</div>
 
-											<div className="flex items-center space-x-2">
+											<div className="flex items-center space-x-2 bg-white/60 rounded-lg p-2 sm:p-3">
 												<span>
 													{candidate["Guest/Host"] === "I like hosting"
 														? "🏠"
 														: "🛋️"}
 												</span>
-												<span>{candidate["Guest/Host"]}</span>
+												<span className="font-medium">{candidate["Guest/Host"]}</span>
 											</div>
+										</div>										{/* Contact button */}
+										<div className="mt-4 pt-4 border-t border-gray-200">
+											<button className="w-full bg-gradient-to-r from-[#49548a] to-blue-600 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2">
+												<span>💬</span>
+												<span>Connect with {candidate.Name}</span>
+											</button>
 										</div>
 									</div>
 								))}
