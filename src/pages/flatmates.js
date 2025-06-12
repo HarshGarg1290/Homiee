@@ -391,7 +391,8 @@ export default function FlatmateForm() {
 								🎯 Your Perfect Matches
 							</h2>
 							<div className="space-y-3 sm:space-y-4">
-								{" "}								{matches.map(({ candidate, match_percentage }, idx) => (
+								{" "}
+								{matches.map(({ candidate, match_percentage }, idx) => (
 									<div
 										key={idx}
 										className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl shadow-lg p-4 sm:p-6 border border-blue-100 hover:shadow-xl transition-all duration-300"
@@ -427,21 +428,23 @@ export default function FlatmateForm() {
 												</div>
 											</div>
 										</div>
-
 										{/* Profile details grid */}
 										<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-gray-700 text-sm sm:text-base">
 											<div className="flex items-center space-x-2 bg-white/60 rounded-lg p-2 sm:p-3">
 												<span>{candidate.Gender === "Male" ? "👨‍💼" : "👩‍💼"}</span>
 												<span className="font-medium">{candidate.Gender}</span>
 												<span className="text-gray-400">•</span>
-												<span className="font-semibold text-green-600">₹{candidate.Budget}</span>
+												<span className="font-semibold text-green-600">
+													₹{candidate.Budget}
+												</span>
 											</div>
 
 											<div className="flex items-center space-x-2 bg-white/60 rounded-lg p-2 sm:p-3">
 												<span>
 													{candidate["Eating Preference"] === "Vegetarian"
 														? "🥬"
-														: candidate["Eating Preference"] === "Non Vegetarian"
+														: candidate["Eating Preference"] ===
+														  "Non Vegetarian"
 														? "🍗"
 														: candidate["Eating Preference"] === "Vegan"
 														? "🥗"
@@ -449,12 +452,16 @@ export default function FlatmateForm() {
 														? "🐟"
 														: "🍳"}
 												</span>
-												<span className="font-medium">{candidate["Eating Preference"]}</span>
+												<span className="font-medium">
+													{candidate["Eating Preference"]}
+												</span>
 											</div>
 
 											<div className="flex items-center space-x-2 bg-white/60 rounded-lg p-2 sm:p-3">
 												<span>🧹</span>
-												<span className="font-medium">{candidate["Cleanliness Spook"]}</span>
+												<span className="font-medium">
+													{candidate["Cleanliness Spook"]}
+												</span>
 											</div>
 
 											<div className="flex items-center space-x-2 bg-white/60 rounded-lg p-2 sm:p-3">
@@ -478,13 +485,17 @@ export default function FlatmateForm() {
 												<span>
 													{candidate["Saturday Twin"] === "House Party Scenes"
 														? "🎉"
-														: candidate["Saturday Twin"] === "Clubbing/Going Out"
+														: candidate["Saturday Twin"] ===
+														  "Clubbing/Going Out"
 														? "🕺"
-														: candidate["Saturday Twin"] === "Chill stay at home"
+														: candidate["Saturday Twin"] ===
+														  "Chill stay at home"
 														? "🏡"
 														: "🎲"}
 												</span>
-												<span className="font-medium">{candidate["Saturday Twin"]}</span>
+												<span className="font-medium">
+													{candidate["Saturday Twin"]}
+												</span>
 											</div>
 
 											<div className="flex items-center space-x-2 bg-white/60 rounded-lg p-2 sm:p-3">
@@ -493,9 +504,12 @@ export default function FlatmateForm() {
 														? "🏠"
 														: "🛋️"}
 												</span>
-												<span className="font-medium">{candidate["Guest/Host"]}</span>
+												<span className="font-medium">
+													{candidate["Guest/Host"]}
+												</span>
 											</div>
-										</div>										{/* Contact button */}
+										</div>{" "}
+										{/* Contact button */}
 										<div className="mt-4 pt-4 border-t border-gray-200">
 											<button className="w-full bg-gradient-to-r from-[#49548a] to-blue-600 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2">
 												<span>💬</span>
