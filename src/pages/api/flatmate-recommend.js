@@ -69,8 +69,7 @@ export default async function handler(req, res) {
 			(c) =>
 				c.City === user.City &&
 				c.Locality === user.Locality &&
-				// Remove the gender filter - people often look for flatmates of any gender
-				// c.Gender === user.Gender &&
+				(user.Gender === "Both" || c.Gender === user.Gender) &&
 				isBudgetClose(user.Budget, c.Budget)
 		);
 		console.log("Filtered candidates:", filteredCandidates.length);

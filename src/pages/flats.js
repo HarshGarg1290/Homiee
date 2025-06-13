@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Head from "next/head";
+import { useRouter } from "next/router";
 import {
 	MapPin,
 	IndianRupee,
@@ -21,6 +22,8 @@ const FormFieldSkeleton = () => (
 );
 
 export default function FlatFinder() {
+	const router = useRouter();
+
 	// State for filters
 	const [selectedCity, setSelectedCity] = useState("");
 	const [selectedSubregion, setSelectedSubregion] = useState("");
@@ -268,11 +271,14 @@ export default function FlatFinder() {
 					}
 				`}</style>
 			</Head>{" "}
-			{/* Minimal Header */}
+			{/* Minimal Header */}{" "}
 			<header className="bg-white border-b border-gray-100 sticky top-0 z-50">
 				<div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
 					<div className="flex items-center justify-between">
-						<div className="flex items-center space-x-2 sm:space-x-3">
+						<button
+							onClick={() => router.push("/")}
+							className="flex items-center space-x-2 sm:space-x-3 hover:opacity-80 transition-opacity cursor-pointer"
+						>
 							<div className="w-8 h-8 sm:w-10 sm:h-10 bg-black rounded-lg flex items-center justify-center">
 								<img
 									src="/logo.jpg"
@@ -283,7 +289,7 @@ export default function FlatFinder() {
 							<h1 className="text-xl sm:text-2xl font-bold text-gray-900">
 								Homiee
 							</h1>
-						</div>
+						</button>
 
 						<a
 							href="https://forms.gle/zgSSwGhtosZLEM5M6"
