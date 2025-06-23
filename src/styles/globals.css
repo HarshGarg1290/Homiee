@@ -1,8 +1,19 @@
 @import "tailwindcss";
 
+/* Font families */
+@layer base {
+	.font-heading {
+		font-family: "Poppins", sans-serif;
+	}
+
+	.font-body {
+		font-family: "Open Sans", sans-serif;
+	}
+}
+
 :root {
 	--background: oklch(1 0 0);
-	--foreground: oklch(0.145 0 0);
+	--foreground: oklch(100% 0.00011 271.152);
 	--radius: 0.625rem;
 	--card: oklch(1 0 0);
 	--card-foreground: oklch(0.145 0 0);
@@ -54,6 +65,7 @@ body {
 	background: var(--background);
 	color: var(--foreground);
 	font-family: Arial, Helvetica, sans-serif;
+	background-color: white;
 }
 
 /* Mobile-first optimizations */

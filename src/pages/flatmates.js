@@ -158,7 +158,7 @@ export default function FlatmateForm() {
 							onClick={() => router.push("/")}
 							className="flex items-center space-x-2 sm:space-x-3 hover:opacity-80 transition-opacity cursor-pointer"
 						>
-							<div className="w-8 h-8 sm:w-10 sm:h-10 bg-black rounded-lg flex items-center justify-center shadow-lg">
+							<div className="w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-lg flex items-center justify-center shadow-lg">
 								<img
 									src="/logo.jpg"
 									alt="Homiee Logo"
