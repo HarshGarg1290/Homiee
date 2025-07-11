@@ -39,7 +39,7 @@ export const useNavbarScroll = () => {
 					if (navbar) {
 						if (currentScrollY > 50) {
 							navbar.style.borderRadius = "0.75rem";
-							navbar.style.transform = "scale(0.8)";
+							navbar.style.transform = "scale(0.9)";
 							navbar.style.boxShadow = "0 10px 40px rgba(0,0,0,0.15)";
 							navbar.style.margin = "0 1rem";
 							navbar.style.width = "calc(100% - 2rem)";
