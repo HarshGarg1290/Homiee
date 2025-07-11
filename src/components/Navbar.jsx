@@ -1,8 +1,10 @@
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
+import { useModal } from "../contexts/ModalContext";
 
 export default function Navbar({ scrollToSection }) {
 	const router = useRouter();
+	const { openLogin } = useModal();
 
 	return (
 		<motion.nav
@@ -69,6 +71,7 @@ export default function Navbar({ scrollToSection }) {
 					transition={{ duration: 0.5, delay: 0.1 }}
 					whileHover={{ scale: 1.05 }}
 					whileTap={{ scale: 0.95 }}
+					onClick={openLogin}
 					className="text-[#1c150d] text-sm font-medium leading-normal hover:text-[#f38406] transition-all duration-300 cursor-pointer font-body px-5 py-2.5 rounded-full hover:bg-white/60 border border-transparent hover:border-white/40 backdrop-blur-sm"
 				>
 					Sign In
@@ -76,6 +79,7 @@ export default function Navbar({ scrollToSection }) {
 				<motion.button
 					whileHover={{ scale: 1.05 }}
 					whileTap={{ scale: 0.95 }}
+					onClick={() => router.push("/signup")}
 					className="flex min-w-[130px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-7 bg-gradient-to-r from-[#f38406] via-[#e07405] to-[#d06304] text-white text-sm font-bold leading-normal tracking-[0.015em] hover:from-[#e07405] hover:via-[#d06304] hover:to-[#c05503] transition-all duration-300 font-body shadow-lg hover:shadow-xl relative group"
 				>
 					<span className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>

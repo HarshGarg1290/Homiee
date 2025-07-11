@@ -6,5 +6,6 @@ export { default as FeaturesSection } from './FeaturesSection';
 export { default as EventsSection } from './EventsSection';
 export { default as CTASection } from './CTASection';
 export { default as Footer } from './Footer';
+export { default as LoginModal } from './LoginModal';
 export { useScrollAnimation } from './hooks/useScrollAnimation';
 export { animations } from './animations/animationVariants';
