@@ -15,20 +15,20 @@ export default function CTASection() {
 			variants={animations.fadeInUp}
 			className="@container"
 		>
-			<div className="flex flex-col justify-end gap-6 px-4 py-10 @[480px]:gap-8 @[480px]:px-10 @[480px]:py-20">
+			<div className="flex flex-col sm: flex-row justify-end gap-6 px-4 py-10 @[480px]:gap-8 @[480px]:px-10 @[480px]:py-20">
 				<motion.div
 					variants={animations.textReveal}
-					className="flex flex-col gap-2 text-center"
+					className="flex flex-col gap-2 text-center items-center"
 				>
 					<motion.h1
 						variants={animations.textReveal}
-						className="text-[#1c150d] tracking-light text-[32px] font-bold leading-tight @[480px]:text-4xl @[480px]:font-black @[480px]:leading-tight @[480px]:tracking-[-0.033em] max-w-[720px] font-heading"
+						className="text-[#1c150d] tracking-light text-[32px] font-bold leading-tight @[480px]:text-4xl @[480px]:font-black @[480px]:leading-tight @[480px]:tracking-[-0.033em] max-w-[720px] font-heading text-center"
 					>
 						Ready to Find Your Tribe?
 					</motion.h1>
 					<motion.p
 						variants={animations.textReveal}
-						className="text-[#1c150d] text-base font-normal leading-normal max-w-[720px] font-body"
+						className="text-[#1c150d] text-base font-normal leading-normal max-w-[720px] font-body text-center"
 					>
 						Join thousands of people who have found their perfect flatmates and
 						discovered their new home through Homiee. Your tribe is waiting for
