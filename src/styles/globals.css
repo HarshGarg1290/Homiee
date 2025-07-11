@@ -1,16 +1,5 @@
 @import "tailwindcss";
 
-/* Font families */
-@layer base {
-	.font-heading {
-		font-family: "Poppins", sans-serif;
-	}
-
-	.font-body {
-		font-family: "Open Sans", sans-serif;
-	}
-}
-
 :root {
 	--background: oklch(1 0 0);
 	--foreground: oklch(100% 0.00011 271.152);
