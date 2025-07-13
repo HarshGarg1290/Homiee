@@ -1,0 +1,88 @@
+// OPTIMIZED DATABASE SCHEMA
+// This consolidates and optimizes the current User model
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String  @id @default(cuid())
+  email    String  @unique
+  password String
+  
+  // Basic Information (consolidated)
+  name        String?
+  firstName   String?
+  lastName    String?
+  phone       String?
+  age         Int?
+  gender      String?
+  profession  String?
+  bio         String?  // Consolidated: removed 'about' duplicate
+  
+  // Location & Budget (optimized)
+  city        String?
+  locality    String?  // Consolidated: removed 'location' duplicate
+  budget      String?
+  moveInDate  DateTime? // Changed: String -> DateTime for proper date handling
+  
+  // Lifestyle Preferences (consolidated & structured)
+  sleepPattern     String?  // Early Bird, Night Owl, Flexible
+  dietaryPrefs     String?  // Consolidated: removed 'eatingPreference' duplicate  
+  cleanliness      Int      @default(3) // Consolidated: removed string version, kept 1-5 scale
+  
+  // Substance Use (consolidated into single JSON or separate fields)
+  smokingHabits    String?  // Never, Occasionally, Regularly
+  drinkingHabits   String?  // Never, Occasionally, Socially, Regularly
+  
+  // Social & Personality (optimized)
+  personalityType  String?  // Consolidated: removed 'personality' duplicate
+  socialStyle      String?  // Party Person, Homebody, Social, etc.
+  hostingStyle     String?  // I like hosting, I like being guest, Either
+  weekendStyle     String?  // Clubbing, House parties, Chill at home, Based on vibe
+  
+  // Interests (well-structured arrays)
+  hobbies          String[]
+  interests        String[]
+  musicGenres      String[]
+  sportsActivities String[]
+  languagesSpoken  String[] // Renamed: languageSpoken -> languagesSpoken
+  
+  // Pet Preferences (consolidated)
+  petOwnership     String?  // Own pets, No pets, Open to pets
+  petPreference    String?  // Love pets, Okay with pets, No pets please
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+// PROPOSED IMPROVEMENTS:
+
+// 1. REMOVED DUPLICATE FIELDS:
+//    - location (kept locality)
+//    - about (kept bio) 
+//    - eatingPreference (kept dietaryPrefs)
+//    - cleanliness string version (kept int version)
+//    - personality (kept personalityType)
+
+// 2. CONSOLIDATED RELATED FIELDS:
+//    - smoker + alcoholUsage -> smokingHabits + drinkingHabits
+//    - partyPerson + personality -> socialStyle
+//    - guestHost + saturdayVibe -> hostingStyle + weekendStyle
+
+// 3. IMPROVED DATA TYPES:
+//    - moveInDate: String -> DateTime
+//    - Consistent naming conventions
+
+// 4. BETTER ORGANIZATION:
+//    - Grouped related fields together
+//    - Clearer field names
+//    - Removed redundancy

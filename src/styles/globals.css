@@ -66,12 +66,11 @@ html {
 	-webkit-text-size-adjust: 100%;
 }
 
-/* Ensure proper touch targets on mobile */
 button,
 a,
 [role="button"] {
-	min-height: 44px;
-	min-width: 44px;
+	min-height: 20px;
+	min-width: 20px;
 }
 
 /* Improve scrolling on iOS */

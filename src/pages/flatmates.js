@@ -1,6 +1,8 @@
 import Head from "next/head";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import { useAuth } from "../contexts/AuthContext";
+import { convertProfileToMLFormat, validateProfileForML } from "../lib/profileToMLMapper";
 
 const initialState = {
 	City: "",
@@ -94,37 +96,45 @@ const genders = ["Male", "Female", "Both"];
 
 export default function FlatmateForm() {
 	const router = useRouter();
-	const [form, setForm] = useState(initialState);
-	const [submitted, setSubmitted] = useState(false);
+	const { user, isAuthenticated } = useAuth();
 	const [matches, setMatches] = useState([]);
 	const [loading, setLoading] = useState(false);
+	const [profileError, setProfileError] = useState(null);
+	const [hasSearched, setHasSearched] = useState(false);
 
-	function handleChange(e) {
-		const { name, value } = e.target;
-		if (name === "City") {
-			setForm((prev) => ({
-				...prev,
-				City: value,
-				Locality: "",
-			}));
-		} else {
-			setForm((prev) => ({
-				...prev,
-				[name]: value,
-			}));
+	// Check authentication on mount
+	useEffect(() => {
+		if (!isAuthenticated) {
+			router.push('/login');
+			return;
 		}
-	}
+	}, [isAuthenticated, router]);
 
-	async function handleSubmit(e) {
-		e.preventDefault();
-		setSubmitted(true);
+	// Auto-search for matches when component loads if user has complete profile
+	useEffect(() => {
+		if (user && isAuthenticated && !hasSearched) {
+			const validation = validateProfileForML(user);
+			if (validation.isValid) {
+				handleAutoSearch();
+			} else {
+				setProfileError(`Please complete your profile. Missing: ${validation.missingFields.join(', ')}`);
+			}
+		}
+	}, [user, isAuthenticated, hasSearched]);
+
+	async function handleAutoSearch() {
 		setLoading(true);
+		setProfileError(null);
 
 		try {
+			// Convert user profile to ML format
+			const mlFormattedData = convertProfileToMLFormat(user);
+			console.log('Converted user profile to ML format:', mlFormattedData);
+
 			const res = await fetch("/api/flatmate-recommend", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(form),
+				body: JSON.stringify(mlFormattedData),
 			});
 
 			if (!res.ok) {
@@ -132,13 +142,21 @@ export default function FlatmateForm() {
 			}
 
 			const data = await res.json();
-			setMatches(data.matches || []); // Fallback to empty array
-			setLoading(false);
+			setMatches(data.matches || []);
+			setHasSearched(true);
 		} catch (error) {
 			console.error("Error:", error);
-			setMatches([]); // Set empty array on error
+			setMatches([]);
+			setProfileError("Failed to find matches. Please try again.");
+		} finally {
 			setLoading(false);
 		}
+	}
+
+	// Manual refresh function
+	async function handleRefresh() {
+		setHasSearched(false);
+		await handleAutoSearch();
 	}
 
 	return (
@@ -186,216 +204,66 @@ export default function FlatmateForm() {
 						</div>
 					)}
 
-					{!submitted && !loading && (
+					{!hasSearched && !loading && (
 						<div>
 							<div className="text-center mb-6 sm:mb-8">
 								<h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#49548a] mb-2 sm:mb-3">
 									Find Your Perfect Flatmate
 								</h1>
 								<p className="text-gray-600 text-base sm:text-lg px-2">
-									Tell us your preferences and we'll find your ideal living
-									companion!
+									We'll use your profile preferences to find your ideal living companion!
 								</p>
 							</div>
-							<form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-								<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-									<div className="space-y-2">
-										<label className="block text-sm font-semibold text-gray-800 mb-2">
-											🏙️ City
-										</label>
-										<select
-											name="City"
-											value={form.City}
-											onChange={handleChange}
-											required
-											className="w-full border-2 text-gray-700 border-blue-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#49548a] focus:border-[#49548a] transition-all duration-200"
-										>
-											<option value="">Select your city</option>
-											{cities.map((city) => (
-												<option key={city} value={city}>
-													{city}
-												</option>
-											))}
-										</select>
-									</div>
 
-									<div className="space-y-2">
-										<label className="block text-sm font-semibold text-gray-800 mb-2">
-											📍 Locality
-										</label>
-										<select
-											name="Locality"
-											value={form.Locality}
-											onChange={handleChange}
-											required
-											className="w-full border-2 text-gray-700 border-blue-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#49548a] focus:border-[#49548a] transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
-											disabled={!form.City}
-										>
-											<option value="">Select locality</option>
-											{form.City &&
-												cityToLocalities[form.City].map((loc) => (
-													<option key={loc} value={loc}>
-														{loc}
-													</option>
-												))}
-										</select>
+							{profileError ? (
+								<div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+									<div className="text-red-600 font-semibold mb-3">Profile Incomplete</div>
+									<p className="text-red-700 mb-4">{profileError}</p>
+									<button
+										onClick={() => router.push('/profile-setup')}
+										className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
+									>
+										Complete Profile
+									</button>
+								</div>
+							) : user ? (
+								<div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6">
+									<h3 className="text-lg font-semibold text-gray-800 mb-4">Your Preferences</h3>
+									<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+										<div><span className="font-medium">📍 Location:</span> {user.city}, {user.location}</div>
+										<div><span className="font-medium">💰 Budget:</span> ₹{user.budget}</div>
+										<div><span className="font-medium">🍽️ Diet:</span> {user.dietaryPrefs}</div>
+										<div><span className="font-medium">🧹 Cleanliness:</span> Level {user.cleanliness}/5</div>
+										<div><span className="font-medium">🚭 Smoking:</span> {user.smoker ? 'Yes' : 'No'}</div>
+										<div><span className="font-medium">🍷 Drinking:</span> {user.alcoholUsage}</div>
 									</div>
-
-									<div className="space-y-2">
-										<label className="block text-sm font-semibold text-gray-800 mb-2">
-											💰 Budget Range
-										</label>
-										<select
-											name="Budget"
-											value={form.Budget}
-											onChange={handleChange}
-											required
-											className="w-full border-2 text-gray-700 border-blue-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#49548a] focus:border-[#49548a] transition-all duration-200"
-										>
-											<option value="">Select budget</option>
-											{budgets.map((b) => (
-												<option key={b} value={b}>
-													₹{b}
-												</option>
-											))}
-										</select>
-									</div>
-
-									<div className="space-y-2">
-										<label className="block text-sm font-semibold text-gray-800 mb-2">
-											👤 Gender
-										</label>
-										<select
-											name="Gender"
-											value={form.Gender}
-											onChange={handleChange}
-											required
-											className="w-full border-2 text-gray-700 border-blue-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#49548a] focus:border-[#49548a] transition-all duration-200"
-										>
-											<option value="">Select gender</option>
-											{genders.map((g) => (
-												<option key={g} value={g}>
-													{g}
-												</option>
-											))}
-										</select>
-									</div>
-
-									<div className="space-y-2">
-										<label className="block text-sm font-semibold text-gray-800 mb-2">
-											🍽️ Eating Preference
-										</label>
-										<select
-											name="Eating Preference"
-											value={form["Eating Preference"]}
-											onChange={handleChange}
-											required
-											className="w-full border-2 text-gray-700 border-blue-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#49548a] focus:border-[#49548a] transition-all duration-200"
-										>
-											<option value="">Select preference</option>
-											{eatingPrefs.map((e) => (
-												<option key={e} value={e}>
-													{e}
-												</option>
-											))}
-										</select>
-									</div>
-
-									<div className="space-y-2">
-										<label className="block text-sm font-semibold text-gray-800 mb-2">
-											🧹 Cleanliness Level
-										</label>
-										<select
-											name="Cleanliness Spook"
-											value={form["Cleanliness Spook"]}
-											onChange={handleChange}
-											required
-											className="w-full border-2 text-gray-700 border-blue-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#49548a] focus:border-[#49548a] transition-all duration-200"
-										>
-											<option value="">Select level</option>
-											{cleanliness.map((c) => (
-												<option key={c} value={c}>
-													{c}
-												</option>
-											))}
-										</select>
-									</div>
-
-									<div className="space-y-2">
-										<label className="block text-sm font-semibold text-gray-800 mb-2">
-											🚬🍻 Smoke/Drink
-										</label>
-										<select
-											name="Smoke/Drink"
-											value={form["Smoke/Drink"]}
-											onChange={handleChange}
-											required
-											className="w-full border-2 text-gray-700 border-blue-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#49548a] focus:border-[#49548a]0 transition-all duration-200"
-										>
-											<option value="">Select preference</option>
-											{smokeDrink.map((s) => (
-												<option key={s} value={s}>
-													{s}
-												</option>
-											))}
-										</select>
-									</div>
-
-									<div className="space-y-2">
-										<label className="block text-sm font-semibold text-gray-800 mb-2">
-											🎉 Saturday Vibe
-										</label>
-										<select
-											name="Saturday Twin"
-											value={form["Saturday Twin"]}
-											onChange={handleChange}
-											required
-											className="w-full border-2 text-gray-700 border-blue-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#49548a] focus:border-[#49548a] transition-all duration-200"
-										>
-											<option value="">Select vibe</option>
-											{saturdayTwin.map((s) => (
-												<option key={s} value={s}>
-													{s}
-												</option>
-											))}
-										</select>
-									</div>
-
-									<div className="space-y-2 md:col-span-2">
-										<label className="block text-sm font-semibold text-gray-800 mb-2">
-											🏠 Guest/Host Preference
-										</label>
-										<select
-											name="Guest/Host"
-											value={form["Guest/Host"]}
-											onChange={handleChange}
-											required
-											className="w-full border-2 text-gray-700 border-blue-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#49548a] focus:border-[#49548a] transition-all duration-200"
-										>
-											<option value="">Select preference</option>
-											{guestHost.map((g) => (
-												<option key={g} value={g}>
-													{g}
-												</option>
-											))}
-										</select>
-									</div>
-								</div>{" "}
-								<button
-									type="submit"
-									className="w-full bg-[#49548a] hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3 sm:py-4 rounded-xl shadow-xl transition-all duration-300 text-base sm:text-lg mt-6 sm:mt-8 transform hover:scale-105"
-								>
-									Find My Perfect Flatmate
-								</button>
-							</form>
+									<button
+										onClick={handleAutoSearch}
+										className="w-full mt-6 bg-gradient-to-r from-[#49548a] to-[#6366f1] text-white py-3 px-6 rounded-xl font-semibold hover:from-[#3d4274] hover:to-[#5856eb] transform hover:scale-105 transition-all duration-200 shadow-lg"
+									>
+										🔍 Find My Matches
+									</button>
+								</div>
+							) : (
+								<div className="text-center py-8">
+									<div className="text-gray-500">Loading your profile...</div>
+								</div>
+							)}
 						</div>
 					)}
-
-					{submitted && !loading && matches.length > 0 && (
+					{hasSearched && !loading && matches.length > 0 && (
 						<div className="space-y-4 sm:space-y-6">
-							<h2 className="text-xl sm:text-2xl font-bold text-center text-[#49548a] mb-4 sm:mb-6">
-								🎯 Your Perfect Matches
-							</h2>
+							<div className="flex justify-between items-center">
+								<h2 className="text-xl sm:text-2xl font-bold text-[#49548a]">
+									🎯 Your Perfect Matches
+								</h2>
+								<button
+									onClick={handleRefresh}
+									className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-lg transition-colors text-sm"
+								>
+									🔄 Refresh
+								</button>
+							</div>
 							<div className="space-y-3 sm:space-y-4">
 								{" "}
 								{matches.map(({ candidate, match_percentage }, idx) => (
@@ -528,24 +396,29 @@ export default function FlatmateForm() {
 						</div>
 					)}
 
-					{submitted && !loading && matches.length === 0 && (
+					{hasSearched && !loading && matches.length === 0 && (
 						<div className="text-center py-16">
 							<div className="text-6xl mb-4">😔</div>
 							<div className="text-xl font-semibold text-gray-700 mb-2">
 								No matches found
 							</div>
 							<div className="text-gray-500 mb-6">
-								Try adjusting your preferences to find more compatible flatmates
+								No compatible flatmates found with your current preferences. Try updating your profile or check back later for new listings.
 							</div>
-							<button
-								onClick={() => {
-									setSubmitted(false);
-									setForm(initialState);
-								}}
-								className="bg-gradient-to-r from-[#49548a] to-blue-600 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-6 py-3 rounded-xl transition-all duration-300"
-							>
-								Try Again
-							</button>
+							<div className="flex gap-4 justify-center">
+								<button
+									onClick={() => router.push('/profile-setup')}
+									className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl transition-all duration-300"
+								>
+									Update Profile
+								</button>
+								<button
+									onClick={handleRefresh}
+									className="bg-gradient-to-r from-[#49548a] to-blue-600 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-6 py-3 rounded-xl transition-all duration-300"
+								>
+									Try Again
+								</button>
+							</div>
 						</div>
 					)}
 				</div>

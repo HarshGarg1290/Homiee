@@ -50,7 +50,7 @@ export default function HeroSection() {
 						transition={{ duration: 0.8, delay: 1.4 }}
 						whileHover={{ scale: 1.05 }}
 						whileTap={{ scale: 0.95 }}
-						onClick={() => router.push("/flats")}
+						onClick={() => router.push("/signup")}
 						className="animated-button flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 @[480px]:h-12 @[480px]:px-5 bg-[#f38406] text-[#1c150d] text-sm font-bold leading-normal tracking-[0.015em] @[480px]:text-base @[480px]:font-bold @[480px]:leading-normal @[480px]:tracking-[0.015em] hover:bg-[#e07405] transition-colors font-body"
 					>
 						<span className="truncate">Get Started</span>

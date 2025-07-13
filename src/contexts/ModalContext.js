@@ -12,20 +12,30 @@ export const useModal = () => {
 
 export const ModalProvider = ({ children }) => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isSignupOpen, setIsSignupOpen] = useState(false);
 
   const openLogin = () => {
     setIsLoginOpen(true);
+    setIsSignupOpen(false);
+  };
+
+  const openSignup = () => {
+    setIsSignupOpen(true);
+    setIsLoginOpen(false);
   };
 
   const closeModals = () => {
     setIsLoginOpen(false);
+    setIsSignupOpen(false);
   };
 
   return (
     <ModalContext.Provider
       value={{
         isLoginOpen,
+        isSignupOpen,
         openLogin,
+        openSignup,
         closeModals,
       }}
     >

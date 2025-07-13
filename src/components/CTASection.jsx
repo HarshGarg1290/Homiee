@@ -2,10 +2,20 @@ import { useRouter } from "next/router";
 import { motion } from "framer-motion";
 import { useScrollAnimation } from "./hooks/useScrollAnimation";
 import { animations } from "./animations/animationVariants";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function CTASection() {
 	const { ref, controls } = useScrollAnimation();
 	const router = useRouter();
+	const { isAuthenticated } = useAuth();
+	
+	const handleGetStarted = () => {
+		if (isAuthenticated) {
+			router.push("/dashboard");
+		} else {
+			router.push("/signup");
+		}
+	};
 
 	return (
 		<motion.div
@@ -40,7 +50,7 @@ export default function CTASection() {
 						<motion.button
 							whileHover={{ scale: 1.05 }}
 							whileTap={{ scale: 0.95 }}
-							onClick={() => router.push("/flats")}
+							onClick={handleGetStarted}
 							className="animated-button flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 @[480px]:h-12 @[480px]:px-5 bg-[#f38406] text-[#1c150d] text-sm font-bold leading-normal tracking-[0.015em] @[480px]:text-base @[480px]:font-bold @[480px]:leading-normal @[480px]:tracking-[0.015em] hover:bg-[#e07405] transition-colors font-body grow"
 						>
 							<span className="truncate">Start Your Journey</span>

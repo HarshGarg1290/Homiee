@@ -3,7 +3,6 @@ import { X } from "lucide-react";
 import { useEffect } from "react";
 
 export default function Modal({ isOpen, onClose, children, title }) {
-  // Prevent background scrolling when modal is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -21,7 +20,7 @@ export default function Modal({ isOpen, onClose, children, title }) {
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
+    
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -31,36 +30,31 @@ export default function Modal({ isOpen, onClose, children, title }) {
             onClick={onClose}
           />
           
-          {/* Modal */}
+
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center "
             onClick={(e) => e.stopPropagation()}
           >
             <div 
-              className="bg-white rounded-2xl shadow-2xl w-full max-w-md relative"
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-md relative "
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Header */}
-              <div className="flex items-center justify-between  px-6 py-3 border-b border-gray-100">
-                <h2 className="text-2xl font-bold text-[#1c150d] font-heading">
-                  {title}
-                </h2>
+              <div className="flex items-center justify-end h-8 ">
                 <motion.button
-                  whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={onClose}
-                  className=" flex items-center justify-center text-center text-gray-400 hover:text-gray-600 transition-colors rounded-full hover:bg-gray-100"
+                  className="w-8 h-8 flex items-center justify-center text-center text-gray-400 hover:text-gray-600 transition-colors rounded-full hover:bg-gray-100  "
                 >
-                  <X className="w-5 h-5 " />
+                  <X className="w-4 h-4 " />
                 </motion.button>
               </div>
               
               {/* Content */}
-              <div className="px-6 pt-4">
+              <div className="px-6">
                 {children}
               </div>
             </div>

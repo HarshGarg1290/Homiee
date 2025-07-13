@@ -3,39 +3,72 @@ import { motion } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import Modal from "./ui/Modal";
 import { useModal } from "../contexts/ModalContext";
+import { useAuth } from "../contexts/AuthContext";
 import { useRouter } from "next/router";
 import { FcGoogle } from "react-icons/fc";
 
 export default function LoginModal() {
   const { isLoginOpen, closeModals } = useModal();
+  const { login, isLoading } = useAuth();
   const router = useRouter();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
+    // Clear errors when user starts typing
+    if (error) setError("");
+    if (fieldErrors[e.target.name]) {
+      setFieldErrors(prev => ({
+        ...prev,
+        [e.target.name]: ""
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+    setError("");
+    setFieldErrors({});
     
-    setTimeout(() => {
-      setIsLoading(false);
+    const result = await login(formData.email, formData.password);
+    
+    if (result.success) {
       closeModals();
-    }, 2000);
+      console.log("Login successful:", result.user);
+      router.push("/dashboard");
+    } else {
+      if (result.errors) {
+        // Handle validation errors
+        const errors = {};
+        result.errors.forEach(err => {
+          errors[err.path] = err.msg;
+        });
+        setFieldErrors(errors);
+      } else {
+        setError(result.message);
+      }
+    }
   };
 
   return (
     <Modal isOpen={isLoginOpen} onClose={closeModals} title="Welcome Back">
       <form onSubmit={handleSubmit} className="space-y-2">
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-600 px-3 py-2 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
+
         {/* Email Field */}
         <div>
           <label className="text-sm font-medium text-gray-700">Email</label>
@@ -47,10 +80,15 @@ export default function LoginModal() {
               value={formData.email}
               onChange={handleInputChange}
               placeholder="Enter your email"
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f38406] focus:border-transparent transition-all duration-200 font-body text-sm text-black"
+              className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-[#f38406] focus:border-transparent transition-all duration-200 font-body text-sm text-black ${
+                fieldErrors.email ? 'border-red-300 bg-red-50' : 'border-gray-200'
+              }`}
               required
             />
           </div>
+          {fieldErrors.email && (
+            <p className="text-red-500 text-xs mt-1">{fieldErrors.email}</p>
+          )}
         </div>
 
         <div className="space-y-1">
@@ -63,7 +101,9 @@ export default function LoginModal() {
               value={formData.password}
               onChange={handleInputChange}
               placeholder="Enter your password"
-              className="w-full pl-10 pr-10 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#f38406] focus:border-transparent transition-all duration-200 font-body text-sm text-black"
+              className={`w-full pl-10 pr-10 py-2.5 border rounded-lg focus:ring-2 focus:ring-[#f38406] focus:border-transparent transition-all duration-200 font-body text-sm text-black ${
+                fieldErrors.password ? 'border-red-300 bg-red-50' : 'border-gray-200'
+              }`}
               required
             />
             <button
@@ -74,6 +114,9 @@ export default function LoginModal() {
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
+          {fieldErrors.password && (
+            <p className="text-red-500 text-xs mt-1">{fieldErrors.password}</p>
+          )}
         </div>
 
         
