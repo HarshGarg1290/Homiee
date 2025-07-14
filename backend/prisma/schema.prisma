@@ -48,11 +48,11 @@ model User {
   interests        String[]
   musicGenres      String[]
   sportsActivities String[]
-  languagesSpoken  String[] // Renamed: languageSpoken -> languagesSpoken
+  languagesSpoken  String[]
   
   // Pet Preferences (consolidated)
-  petOwnership     String?  // Own pets, No pets, Open to pets
-  petPreference    String?  // Love pets, Okay with pets, No pets please
+  petOwnership     String?
+  petPreference    String?
   
   // Timestamps
   createdAt DateTime @default(now())

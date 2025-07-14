@@ -1,79 +1,25 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/router";
-import { 
-  User, MapPin, Home, Heart, Music, 
+import {
+  User, MapPin, Home, Heart, Music,
   ChevronLeft, ChevronRight, Calendar,
   Clock, Utensils, Wine, Cigarette,
   Dog, PartyPopper, Sparkles, Languages
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
-
-const genderOptions = ["Male", "Female", "Non-binary", "Prefer not to say"];
-const professionOptions = ["Student", "Software Engineer", "Doctor", "Teacher", "Business", "Designer", "Marketing", "Finance", "Other"];
-
-const cities = ["Delhi", "Gurgaon", "Noida", "Bangalore", "Mumbai", "Pune", "Chennai", "Hyderabad", "Kolkata"];
-const cityToLocalities = {
-  Delhi: ["North Delhi", "Central Delhi", "East Delhi", "South Delhi", "West Delhi", "New Delhi"],
-  Mumbai: ["Lower Parel/Worli", "Marine/Colaba", "Bandra", "Andheri E", "Andheri W", "Borivali/Kandivali", "Vile Parle"],
-  Gurgaon: ["DLF 4", "DLF 2", "DLF 5", "Sector 18", "Sector 50", "Sector 48", "Udyog Vihar"],
-  Noida: ["Sector 62", "Sector 137", "Sector 76/77/78", "Sector 18", "Sector 15/16"],
-  Bangalore: ["Koramangala", "HSR Layout", "Marathalli", "Whitefield", "Electronic City", "Indiranagar"],
-  Pune: ["Koregaon Park", "Viman Nagar", "Baner", "Wakad", "Hadapsar", "Kharadi"],
-  Chennai: ["Anna Nagar", "T Nagar", "Velachery", "OMR", "Adyar", "Nungambakkam"]
-};
-
-const dietaryPrefs = ["Vegetarian", "Non-Vegetarian", "Vegan", "Pescetarian", "Veg + Eggs", "Jain"];
-
-const smokingHabits = ["Never", "Occasionally", "Regularly"];
-const drinkingHabits = ["Never", "Occasionally", "Socially", "Regularly", "Prefer not to say"];
-
-const personalityTypes = ["Introvert", "Extrovert", "Ambivert", "Social Butterfly", "Homebody"];
-
-const socialStyles = ["Party Person", "Homebody", "Social", "Balanced"];
-const hostingStyles = ["I like hosting", "I like being guest", "Either is fine"];
-const weekendStyles = ["Clubbing/Going Out", "House Party Scenes", "Chill stay at home", "Based on my vibe"];
-
-const petOwnership = ["Own pets", "No pets", "Open to pets"];
-const petPreferences = ["Love pets", "Okay with pets", "No pets please"];
-
-const budgetRanges = [
-  "<15000",
-  "15000-20000", 
-  "20000-25000",
-  "25000-30000", 
-  "30000-40000",
-  "40000+"
-];
-
-const sleepPatterns = ["Early Bird", "Night Owl", "Flexible"];
-
-const hobbiesOptions = [
-  "Reading", "Gaming", "Cooking", "Photography", "Traveling", "Art", "Music", "Dancing",
-  "Writing", "Blogging", "Yoga", "Meditation", "Gardening", "Crafting"
-];
-
-const interestsOptions = [
-  "Technology", "Sports", "Movies", "Food", "Fashion", "Politics", "Environment",
-  "Science", "History", "Philosophy", "Psychology", "Business", "Startups"
-];
-
-const musicGenres = [
-  "Pop", "Rock", "Classical", "Hip-Hop", "Electronic", "Jazz", "Country",
-  "Bollywood", "Indie", "R&B", "Reggae", "Folk"
-];
-
-const sportsActivities = [
-  "Cricket", "Football", "Basketball", "Tennis", "Gym", "Running", "Swimming",
-  "Badminton", "Cycling", "Yoga", "Dance", "Martial Arts"
-];
-
-const languages = ["English", "Hindi", "Bengali", "Tamil", "Telugu", "Marathi", "Gujarati", "Kannada", "Malayalam", "Punjabi"];
+import { 
+  genderOptions, professionOptions, cities, cityToLocalities,
+  dietaryPrefs, smokingHabits, drinkingHabits, personalityTypes,
+  socialStyles, hostingStyles, weekendStyles, petOwnership,
+  petPreferences, budgetRanges, sleepPatterns, hobbiesOptions,
+  interestsOptions, musicGenres, sportsActivities, languages
+} from "../lib/data";
+import { scrollToTop } from "../lib/smoothScroll";
 
 export default function ProfileSetup() {
   const router = useRouter();
   const { user, updateProfile, isLoading } = useAuth();
-  
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({
     // Step 1: Basic Information
@@ -81,43 +27,26 @@ export default function ProfileSetup() {
     gender: "",
     profession: "",
     bio: "",
-    
     // Step 2: Location & Budget
     city: "",
-    locality: "", // Optimized: removed 'location' duplicate
-    budget: "",
+    locality: "",    budget: "",
     moveInDate: "",
-    
     // Step 3: Lifestyle Preferences (optimized)
     sleepPattern: "", // Early Bird, Night Owl, Flexible
-    dietaryPrefs: "", // Consolidated: removed eatingPreference duplicate
-    smokingHabits: "", // Optimized: consolidated from smoker boolean
-    drinkingHabits: "", // Optimized: renamed from alcoholUsage
-    cleanliness: 3, // Consolidated: single field for cleanliness level
-    personalityType: "",
-    
+    dietaryPrefs: "",    smokingHabits: "",    drinkingHabits: "",    cleanliness: 3,    personalityType: "",
     // Step 4: Social Preferences (new optimized grouping)
-    socialStyle: "", // Optimized: consolidated from partyPerson + personality
-    hostingStyle: "", // New: hosting preference
-    weekendStyle: "", // New: weekend activity preference
-    
+    socialStyle: "",    hostingStyle: "",    weekendStyle: "",
     // Step 5: Hobbies & Interests
     hobbies: [],
     interests: [],
-    
     // Step 6: Entertainment & Final
     musicGenres: [],
     sportsActivities: [],
-    languagesSpoken: [], // Optimized: renamed from languageSpoken
-    
+    languagesSpoken: [],
     // Pet Preferences (consolidated)
-    petOwnership: "", // New: whether user owns pets
-    petPreference: "", // Existing: preference for flatmate's pets
-  });
-  
+    petOwnership: "",    petPreference: "",  });
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
-
   const steps = [
     {
       title: "Basic Information",
@@ -138,7 +67,7 @@ export default function ProfileSetup() {
       fields: ['sleepPattern', 'dietaryPrefs', 'smokingHabits', 'drinkingHabits', 'personalityType']
     },
     {
-      title: "Social & Living Style", 
+      title: "Social & Living Style",
       subtitle: "How do you like to live and socialize?",
       icon: <Heart className="w-6 h-6" />,
       fields: ['socialStyle', 'hostingStyle', 'weekendStyle']
@@ -156,17 +85,30 @@ export default function ProfileSetup() {
       fields: ['musicGenres', 'sportsActivities', 'languagesSpoken', 'petOwnership', 'petPreference']
     }
   ];
-
   const totalSteps = steps.length;
   const progress = ((currentStep + 1) / totalSteps) * 100;
-
   // Redirect if not authenticated
   useEffect(() => {
-    if (!user) {
+    // Only redirect if we're not loading and there's no user
+    if (!isLoading && !user) {
       router.push('/signup');
     }
-  }, [user, router]);
-
+  }, [user, isLoading, router]);
+  // Show loading while authentication is being initialized
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#f38406] mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+  // Only redirect after loading is complete
+  if (!user) {
+    return null;
+  }
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
@@ -175,7 +117,6 @@ export default function ProfileSetup() {
     }));
     clearErrors(name);
   };
-
   const handleMultiSelect = (field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -184,7 +125,6 @@ export default function ProfileSetup() {
         : [...prev[field], value]
     }));
   };
-
   const clearErrors = (fieldName) => {
     if (error) setError("");
     if (fieldErrors[fieldName]) {
@@ -194,20 +134,16 @@ export default function ProfileSetup() {
       }));
     }
   };
-
   const validateCurrentStep = () => {
     const currentFields = steps[currentStep].fields;
     const newErrors = {};
-    
-
-    
     currentFields.forEach(field => {
       if (Array.isArray(formData[field])) {
         // For array fields, check if at least one is selected
         if (formData[field].length === 0) {
           const fieldDisplayName = {
             hobbies: 'hobby',
-            interests: 'interest', 
+            interests: 'interest',
             musicGenres: 'music genre',
             sportsActivities: 'sport or activity',
             languagesSpoken: 'language' // Updated field name
@@ -219,7 +155,7 @@ export default function ProfileSetup() {
           sleepPattern: 'sleep pattern',
           dietaryPrefs: 'dietary preference',
           smokingHabits: 'smoking habit', // Updated
-          drinkingHabits: 'drinking habit', // Updated  
+          drinkingHabits: 'drinking habit', // Updated
           personalityType: 'personality type',
           socialStyle: 'social style', // New
           hostingStyle: 'hosting style', // New
@@ -227,12 +163,10 @@ export default function ProfileSetup() {
           petOwnership: 'pet ownership', // New
           petPreference: 'pet preference',
           moveInDate: 'move-in date',
-          locality: 'locality' // Added for consistency
-        }[field] || field;
+          locality: 'locality'        }[field] || field;
         newErrors[field] = `Please select ${fieldDisplayName}`;
       }
     });
-
     // Special validation for age
     if (currentFields.includes('age') && formData.age) {
       const age = parseInt(formData.age);
@@ -240,36 +174,33 @@ export default function ProfileSetup() {
         newErrors.age = "Age must be between 18 and 60";
       }
     }
-
     if (Object.keys(newErrors).length > 0) {
       setFieldErrors(newErrors);
       return false;
     }
     return true;
   };
-
   const handleNext = () => {
     if (validateCurrentStep()) {
       setFieldErrors({}); // Clear any previous errors when moving to next step
       setCurrentStep(prev => Math.min(prev + 1, totalSteps - 1));
+      // Smooth scroll to top with a slight delay for better animation
+      scrollToTop();
     }
   };
-
   const handlePrevious = () => {
     setFieldErrors({}); // Clear any errors when going back
     setCurrentStep(prev => Math.max(prev - 1, 0));
+    // Smooth scroll to top with a slight delay for better animation
+    scrollToTop();
   };
-
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
     setError("");
     setFieldErrors({});
-    
     if (!validateCurrentStep()) return;
-    
     try {
       const result = await updateProfile(formData);
-      
       if (result.success) {
         router.push('/dashboard');
       } else {
@@ -279,7 +210,6 @@ export default function ProfileSetup() {
       setError('An error occurred. Please try again.');
     }
   };
-
   const renderStepContent = () => {
     switch (currentStep) {
       case 0: // Basic Information
@@ -302,7 +232,6 @@ export default function ProfileSetup() {
                 />
                 {fieldErrors.age && <p className="text-red-500 text-xs mt-1">{fieldErrors.age}</p>}
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
                 <select
@@ -321,7 +250,6 @@ export default function ProfileSetup() {
                 {fieldErrors.gender && <p className="text-red-500 text-xs mt-1">{fieldErrors.gender}</p>}
               </div>
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Profession</label>
               <select
@@ -339,7 +267,6 @@ export default function ProfileSetup() {
               </select>
               {fieldErrors.profession && <p className="text-red-500 text-xs mt-1">{fieldErrors.profession}</p>}
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Bio</label>
               <textarea
@@ -356,7 +283,6 @@ export default function ProfileSetup() {
             </div>
           </div>
         );
-
       case 1: // Location & Budget
         return (
           <div className="space-y-6">
@@ -378,7 +304,6 @@ export default function ProfileSetup() {
                 </select>
                 {fieldErrors.city && <p className="text-red-500 text-xs mt-1">{fieldErrors.city}</p>}
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Location</label>
                 <select
@@ -398,7 +323,6 @@ export default function ProfileSetup() {
                 {fieldErrors.locality && <p className="text-red-500 text-xs mt-1">{fieldErrors.locality}</p>}
               </div>
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Budget Range (₹/month)</label>
@@ -419,7 +343,6 @@ export default function ProfileSetup() {
                 </select>
                 {fieldErrors.budget && <p className="text-red-500 text-xs mt-1">{fieldErrors.budget}</p>}
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Move-in Date</label>
                 <input
@@ -437,7 +360,6 @@ export default function ProfileSetup() {
             </div>
           </div>
         );
-
       case 2: // Lifestyle Preferences
         return (
           <div className="space-y-6">
@@ -464,7 +386,6 @@ export default function ProfileSetup() {
                 </select>
                 {fieldErrors.sleepPattern && <p className="text-red-500 text-xs mt-1">{fieldErrors.sleepPattern}</p>}
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <Utensils className="inline w-4 h-4 mr-1" />
@@ -486,7 +407,6 @@ export default function ProfileSetup() {
                 {fieldErrors.dietaryPrefs && <p className="text-red-500 text-xs mt-1">{fieldErrors.dietaryPrefs}</p>}
               </div>
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -508,7 +428,6 @@ export default function ProfileSetup() {
                 </select>
                 {fieldErrors.smokingHabits && <p className="text-red-500 text-xs mt-1">{fieldErrors.smokingHabits}</p>}
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <Wine className="inline w-4 h-4 mr-1" />
@@ -530,7 +449,6 @@ export default function ProfileSetup() {
                 {fieldErrors.drinkingHabits && <p className="text-red-500 text-xs mt-1">{fieldErrors.drinkingHabits}</p>}
               </div>
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <Sparkles className="inline w-4 h-4 mr-1" />
@@ -551,7 +469,6 @@ export default function ProfileSetup() {
               </select>
               {fieldErrors.personalityType && <p className="text-red-500 text-xs mt-1">{fieldErrors.personalityType}</p>}
             </div>
-
             {/* Cleanliness slider */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -576,7 +493,6 @@ export default function ProfileSetup() {
             </div>
           </div>
         );
-
       case 3: // Social & Living Style
         return (
           <div className="space-y-6">
@@ -601,7 +517,6 @@ export default function ProfileSetup() {
                 </select>
                 {fieldErrors.socialStyle && <p className="text-red-500 text-xs mt-1">{fieldErrors.socialStyle}</p>}
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <Home className="inline w-4 h-4 mr-1" />
@@ -623,7 +538,6 @@ export default function ProfileSetup() {
                 {fieldErrors.hostingStyle && <p className="text-red-500 text-xs mt-1">{fieldErrors.hostingStyle}</p>}
               </div>
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <PartyPopper className="inline w-4 h-4 mr-1" />
@@ -646,7 +560,6 @@ export default function ProfileSetup() {
             </div>
           </div>
         );
-
       case 4: // Hobbies & Interests
         return (
           <div className="space-y-8">
@@ -673,7 +586,6 @@ export default function ProfileSetup() {
               </div>
               {fieldErrors.hobbies && <p className="text-red-500 text-xs mt-1">{fieldErrors.hobbies}</p>}
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">
                 Interests (Select multiple)
@@ -698,7 +610,6 @@ export default function ProfileSetup() {
             </div>
           </div>
         );
-
       case 5: // Entertainment & Final Preferences
         return (
           <div className="space-y-6">
@@ -725,7 +636,6 @@ export default function ProfileSetup() {
               </div>
               {fieldErrors.musicGenres && <p className="text-red-500 text-xs mt-1">{fieldErrors.musicGenres}</p>}
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">
                 Sports & Activities (Select multiple)
@@ -748,7 +658,6 @@ export default function ProfileSetup() {
               </div>
               {fieldErrors.sportsActivities && <p className="text-red-500 text-xs mt-1">{fieldErrors.sportsActivities}</p>}
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">
                 <Languages className="inline w-4 h-4 mr-1" />
@@ -772,7 +681,6 @@ export default function ProfileSetup() {
               </div>
               {fieldErrors.languagesSpoken && <p className="text-red-500 text-xs mt-1">{fieldErrors.languagesSpoken}</p>}
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -794,7 +702,6 @@ export default function ProfileSetup() {
                 </select>
                 {fieldErrors.petOwnership && <p className="text-red-500 text-xs mt-1">{fieldErrors.petOwnership}</p>}
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Pet Preference for Flatmate
@@ -817,16 +724,13 @@ export default function ProfileSetup() {
             </div>
           </div>
         );
-
       default:
         return null;
     }
   };
-
   if (!user) {
     return <div>Loading...</div>;
   }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50 py-8 px-4">
       <div className="max-w-4xl mx-auto">
@@ -835,7 +739,6 @@ export default function ProfileSetup() {
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Complete Your Profile</h1>
           <p className="text-gray-600">Help us find you the perfect flatmate match</p>
         </div>
-
         {/* Progress Bar */}
         <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 mb-8">
           <div className="flex items-center justify-between mb-4">
@@ -846,19 +749,15 @@ export default function ProfileSetup() {
                 <p className="text-sm text-gray-600">{steps[currentStep].subtitle}</p>
               </div>
             </div>
-            <div className="text-sm text-gray-500">
-              Step {currentStep + 1} of {totalSteps}
-            </div>
           </div>
-          
+          {/* Progress Bar Visual */}
           <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-gradient-to-r from-[#f38406] to-orange-500 h-2 rounded-full transition-all duration-500"
+            <div 
+              className="bg-gradient-to-r from-[#f38406] to-[#e07405] h-2 rounded-full transition-all duration-500 ease-out"
               style={{ width: `${progress}%` }}
             ></div>
           </div>
         </div>
-
         {/* Form Content */}
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-8">
           <AnimatePresence mode="wait">
@@ -872,14 +771,12 @@ export default function ProfileSetup() {
               {renderStepContent()}
             </motion.div>
           </AnimatePresence>
-
           {error && (
             <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
               {error}
             </div>
           )}
         </div>
-
         {/* Navigation */}
         <div className="flex justify-between items-center">
           <button
@@ -894,23 +791,7 @@ export default function ProfileSetup() {
             <ChevronLeft className="w-4 h-4" />
             Previous
           </button>
-
-          <div className="flex gap-2">
-            {Array.from({ length: totalSteps }, (_, index) => (
-              <div
-                key={index}
-                className={`w-3 h-3 rounded-full transition-all duration-200 ${
-                  index === currentStep
-                    ? 'bg-[#f38406]'
-                    : index < currentStep
-                    ? 'bg-green-500'
-                    : 'bg-gray-200'
-                }`}
-              />
-            ))}
-          </div>
-
-          {currentStep === totalSteps - 1 ? (
+          {currentStep === steps.length - 1 ? (
             <button
               onClick={handleSubmit}
               disabled={isLoading}

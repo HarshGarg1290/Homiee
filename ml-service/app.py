@@ -1,11 +1,12 @@
 """
-Flask API for Flatmate Matching ML Model
-Designed to be deployed as a microservice on Railway/Render
+Enhanced Flask API for New Optimized Flatmate Matching ML Model
+Uses the new model trained on optimized registration fields directly
 """
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import joblib
 import numpy as np
+import pandas as pd
 import os
 import logging
 
@@ -18,336 +19,301 @@ logger = logging.getLogger(__name__)
 
 @app.route('/health', methods=['GET'])
 def health_check():
-    """Health check endpoint for Railway"""
-    return jsonify({"status": "healthy", "service": "ml-service"}), 200
+    """Health check endpoint"""
+    return jsonify({"status": "healthy", "service": "enhanced-ml-service"}), 200
 
 # Global variables for model and columns
 model = None
 model_columns = None
 
-def load_model():
-    """Load the trained model and feature columns"""
+def load_enhanced_model():
+    """Load the enhanced trained model and feature columns"""
     global model, model_columns
     try:
         model_path = os.path.join(os.path.dirname(__file__), 'flatmate_match_model.pkl')
         columns_path = os.path.join(os.path.dirname(__file__), 'flatmate_model_columns.pkl')
         
-        # Try to load the model with error handling
-        try:
-            model = joblib.load(model_path)
-            model_columns = joblib.load(columns_path)
-            logger.info(f"Model loaded successfully with {len(model_columns)} features")
-            return True
-        except Exception as model_error:
-            logger.error(f"Model loading failed: {str(model_error)}")
-            # Try to retrain the model if loading fails
-            logger.info("Attempting to retrain model...")
-            return retrain_model()
-            
+        model = joblib.load(model_path)
+        model_columns = joblib.load(columns_path)
+        logger.info(f"✅ Enhanced model loaded successfully with {len(model_columns)} features")
+        return True
+        
     except Exception as e:
-        logger.error(f"Error loading model: {str(e)}")
-        return False
+        logger.error(f"❌ Error loading enhanced model: {str(e)}")
+        return create_fallback_model()
 
-def retrain_model():
-    """Create a simple fallback model in case of loading failure"""
+def create_fallback_model():
+    """Create a simple fallback model for the enhanced features"""
     global model, model_columns
     try:
-        logger.info("Creating simple fallback model...")
+        logger.info("🔧 Creating enhanced fallback model...")
         
-        # Create a simple mock model that doesn't require training data
-        class SimpleFallbackModel:
+        class EnhancedFallbackModel:
             def predict(self, X):
-                """Simple deterministic prediction based on feature similarity"""
+                """Enhanced fallback prediction based on feature analysis"""
                 predictions = []
+                
                 for features in X:
-                    # Simple algorithm: base score + bonuses for matching features
                     score = 50  # Base compatibility
                     
-                    # Count non-zero features (indicating matches)
-                    feature_count = sum(1 for f in features if f > 0)
+                    # Look for key compatibility indicators in feature names
+                    feature_dict = dict(zip(model_columns, features))
                     
-                    # Add bonus for more matching features
-                    score += min(30, feature_count * 2)
+                    # Location compatibility (very important)
+                    if feature_dict.get('same_city', 0) == 1:
+                        score += 15
+                    if feature_dict.get('same_locality', 0) == 1:
+                        score += 10
                     
-                    # Add some variation
+                    # Budget compatibility
+                    if feature_dict.get('budget_compatibility', 0) == 1:
+                        score += 10
+                    
+                    # Lifestyle compatibility bonuses
+                    score += feature_dict.get('sleep_compatibility', 0) * 8
+                    score += feature_dict.get('dietary_compatibility', 0) * 8
+                    score += feature_dict.get('social_compatibility', 0) * 6
+                    score += feature_dict.get('cleanliness_compatibility', 0) * 8
+                    
+                    # Interest overlaps
+                    score += feature_dict.get('hobbies_overlap', 0) * 10
+                    score += feature_dict.get('interests_overlap', 0) * 8
+                    score += feature_dict.get('music_overlap', 0) * 5
+                    
+                    # Pet compatibility
+                    score += feature_dict.get('pet_ownership_compatibility', 0) * 6
+                    
+                    # Add some realistic variance
                     import random
-                    score += random.randint(-5, 5)
+                    score += random.uniform(-5, 5)
                     
                     # Ensure score is within bounds
-                    score = max(25, min(95, score))
+                    score = max(15, min(95, score))
                     predictions.append(score)
                 
                 return np.array(predictions)
         
-        # Create simple feature columns list
+        # Create enhanced feature columns list
         model_columns = [
-            'User_City_Mumbai', 'User_City_Delhi', 'User_City_Bangalore',
-            'Cand_City_Mumbai', 'Cand_City_Delhi', 'Cand_City_Bangalore',
-            'User_Gender_Male', 'User_Gender_Female', 'Cand_Gender_Male', 'Cand_Gender_Female',
-            'User_Budget_Low', 'User_Budget_Medium', 'User_Budget_High',
-            'Cand_Budget_Low', 'Cand_Budget_Medium', 'Cand_Budget_High',
-            'SameCity_Mumbai', 'SameCity_Delhi', 'SameCity_Bangalore',
-            'SameBudget_Low', 'SameBudget_Medium', 'SameBudget_High'
+            # Basic compatibility features
+            'age_difference', 'same_city', 'same_locality', 'same_gender',
+            'budget_compatibility', 'budget_difference',
+            
+            # Lifestyle compatibility
+            'sleep_compatibility', 'dietary_compatibility', 'social_compatibility',
+            'hosting_compatibility', 'weekend_compatibility',
+            'cleanliness_difference', 'cleanliness_compatibility',
+            'smoking_compatibility', 'drinking_compatibility',
+            'personality_compatibility',
+            
+            # Interest overlaps
+            'hobbies_overlap', 'interests_overlap', 'music_overlap',
+            'sports_overlap', 'language_overlap',
+            
+            # Pet compatibility
+            'pet_ownership_compatibility'
         ]
         
-        model = SimpleFallbackModel()
-        
-        logger.info(f"Simple fallback model created with {len(model_columns)} features")
+        model = EnhancedFallbackModel()
+        logger.info(f"✅ Enhanced fallback model created with {len(model_columns)} base features")
         return True
         
     except Exception as e:
-        logger.error(f"Fallback model creation failed: {str(e)}")
+        logger.error(f"❌ Enhanced fallback model creation failed: {str(e)}")
         return False
 
 # Load model on import
-load_model()
+load_enhanced_model()
 
-def encode_features(user_data, flatmate_data):
-    """Encode user and flatmate data into model features for enhanced model"""
+def calculate_array_overlap(user_array, candidate_array):
+    """Calculate overlap percentage between two arrays"""
     try:
+        if not user_array or not candidate_array:
+            return 0
+        
+        user_items = set(str(user_array).split(';')) if isinstance(user_array, str) else set(user_array)
+        candidate_items = set(str(candidate_array).split(';')) if isinstance(candidate_array, str) else set(candidate_array)
+        
+        if len(user_items) == 0 or len(candidate_items) == 0:
+            return 0
+        
+        overlap = len(user_items.intersection(candidate_items))
+        total_unique = len(user_items.union(candidate_items))
+        
+        return overlap / total_unique if total_unique > 0 else 0
+    except:
+        return 0
+
+def calculate_hosting_compatibility(user_hosting, candidate_hosting):
+    """Calculate hosting compatibility score"""
+    if user_hosting == 'Either' or candidate_hosting == 'Either':
+        return 1.0
+    elif (user_hosting == 'I like hosting' and candidate_hosting == 'I like being guest') or \
+         (user_hosting == 'I like being guest' and candidate_hosting == 'I like hosting'):
+        return 1.0
+    elif user_hosting == candidate_hosting:
+        return 0.5
+    else:
+        return 0.0
+
+def calculate_pet_compatibility(user_ownership, candidate_ownership, user_preference, candidate_preference):
+    """Calculate pet ownership and preference compatibility"""
+    if (user_ownership == 'Own pets' and candidate_preference == 'Love pets') or \
+       (candidate_ownership == 'Own pets' and user_preference == 'Love pets'):
+        return 1.0
+    
+    if (user_ownership == 'Own pets' and candidate_preference == 'Okay with pets') or \
+       (candidate_ownership == 'Own pets' and user_preference == 'Okay with pets'):
+        return 0.7
+    
+    if user_preference == 'No pets please' and candidate_preference == 'No pets please' and \
+       user_ownership == 'No pets' and candidate_ownership == 'No pets':
+        return 1.0
+    
+    if (user_ownership == 'Own pets' and candidate_preference == 'No pets please') or \
+       (candidate_ownership == 'Own pets' and user_preference == 'No pets please'):
+        return 0.0
+    
+    return 0.5
+
+def encode_enhanced_features(user_data, candidate_data):
+    """Encode user and candidate data into enhanced model features"""
+    try:
+        logger.info(f"🔧 Encoding enhanced features for user-candidate pair")
+        
         # Initialize feature vector
         features = np.zeros(len(model_columns))
-        
-        # Create feature dictionary
         feature_dict = {}
-          # Process user data with correct enhanced model naming convention
-        for key, value in user_data.items():
-            if isinstance(value, str) and value.strip():
-                # Map column names to match enhanced model format exactly
-                if key == "Eating Preference":
-                    feature_name = f"User_Eating_{value}"
-                elif key == "Cleanliness Spook":
-                    feature_name = f"User_Cleanliness_{value}"
-                elif key == "Smoke/Drink":
-                    feature_name = f"User_SmokeDrink_{value}"
-                elif key == "Saturday Twin":
-                    feature_name = f"User_Saturday_{value}"
-                elif key == "Guest/Host":
-                    feature_name = f"User_GuestHost_{value}"
-                elif key == "Budget":
-                    feature_name = f"User_Budget_{value}"
-                else:
-                    feature_name = f"User_{key}_{value}"
-                
-                # Only add if this feature exists in the model
-                if feature_name in model_columns:
-                    feature_dict[feature_name] = 1
-                    logger.info(f"✅ Set user feature: {feature_name}")
-                else:
-                    logger.warning(f"❌ Feature not found in model: {feature_name}")
         
-        # Process flatmate data with correct enhanced model naming convention
-        for key, value in flatmate_data.items():
-            if isinstance(value, str) and value.strip():
-                # Map column names to match enhanced model format exactly
-                if key == "Eating Preference":
-                    feature_name = f"Cand_Eating_{value}"
-                elif key == "Cleanliness Spook":
-                    feature_name = f"Cand_Cleanliness_{value}"
-                elif key == "Smoke/Drink":
-                    feature_name = f"Cand_SmokeDrink_{value}"
-                elif key == "Saturday Twin":
-                    feature_name = f"Cand_Saturday_{value}"
-                elif key == "Guest/Host":
-                    feature_name = f"Cand_GuestHost_{value}"
-                elif key == "Budget":
-                    feature_name = f"Cand_Budget_{value}"
-                else:
-                    feature_name = f"Cand_{key}_{value}"
-                    
-                # Only add if this feature exists in the model
-                if feature_name in model_columns:
-                    feature_dict[feature_name] = 1
-                    logger.info(f"✅ Set candidate feature: {feature_name}")
-                else:
-                    logger.warning(f"❌ Feature not found in model: {feature_name}")        # Add interaction features that the enhanced model expects
-        # Same city interaction
-        user_city = user_data.get('City', '')
-        cand_city = flatmate_data.get('City', '')
-        if user_city == cand_city and user_city:
-            feature_dict['SameCity'] = 1
-            logger.info(f"✅ Set interaction feature: SameCity")
+        # Basic demographic features
+        feature_dict['age_difference'] = abs(user_data.get('age', 25) - candidate_data.get('Age', 25))
+        feature_dict['same_city'] = 1 if user_data.get('city') == candidate_data.get('City') else 0
+        feature_dict['same_locality'] = 1 if user_data.get('locality') == candidate_data.get('Locality') else 0
+        feature_dict['same_gender'] = 1 if user_data.get('gender') == candidate_data.get('Gender') else 0
         
-        # Same locality interaction
-        user_locality = user_data.get('Locality', '')
-        cand_locality = flatmate_data.get('Locality', '')
-        if user_locality == cand_locality and user_locality:
-            feature_dict['SameLocality'] = 1
-            logger.info(f"✅ Set interaction feature: SameLocality")
+        # Budget compatibility
+        budget_order = ['<15000', '15000-20000', '20000-25000', '25000-30000', '30000-40000', '40000+']
+        try:
+            user_budget_idx = budget_order.index(user_data.get('budget', '20000-25000'))
+            cand_budget_idx = budget_order.index(candidate_data.get('Budget', '20000-25000'))
+            feature_dict['budget_difference'] = abs(user_budget_idx - cand_budget_idx)
+            feature_dict['budget_compatibility'] = 1 if feature_dict['budget_difference'] <= 1 else 0
+        except:
+            feature_dict['budget_difference'] = 0
+            feature_dict['budget_compatibility'] = 1
         
-        # Same budget interaction
-        user_budget = user_data.get('Budget', '')
-        cand_budget = flatmate_data.get('Budget', '')
-        if user_budget == cand_budget and user_budget:
-            feature_dict['SameBudget'] = 1
-            logger.info(f"✅ Set interaction feature: SameBudget")
+        # Lifestyle compatibility
+        feature_dict['sleep_compatibility'] = 1 if user_data.get('sleepPattern') == candidate_data.get('sleepPattern') else 0
+        feature_dict['dietary_compatibility'] = 1 if user_data.get('dietaryPrefs') == candidate_data.get('dietaryPrefs') else 0
+        feature_dict['social_compatibility'] = 1 if user_data.get('socialStyle') == candidate_data.get('socialStyle') else 0
+        feature_dict['weekend_compatibility'] = 1 if user_data.get('weekendStyle') == candidate_data.get('weekendStyle') else 0
+        feature_dict['personality_compatibility'] = 1 if user_data.get('personalityType') == candidate_data.get('personalityType') else 0
         
-        # Same eating preference interaction
-        user_eating = user_data.get('Eating Preference', '')
-        cand_eating = flatmate_data.get('Eating Preference', '')
-        if user_eating == cand_eating and user_eating:
-            feature_dict['SameEating'] = 1
-            logger.info(f"✅ Set interaction feature: SameEating")
-        
-        # Same cleanliness interaction
-        user_cleanliness = user_data.get('Cleanliness Spook', '')
-        cand_cleanliness = flatmate_data.get('Cleanliness Spook', '')
-        if user_cleanliness == cand_cleanliness and user_cleanliness:
-            feature_dict['SameCleanliness'] = 1
-            logger.info(f"✅ Set interaction feature: SameCleanliness")
-        
-        # Same smoke/drink interaction
-        user_smoke = user_data.get('Smoke/Drink', '')
-        cand_smoke = flatmate_data.get('Smoke/Drink', '')
-        if user_smoke == cand_smoke and user_smoke:
-            feature_dict['SameSmokeDrink'] = 1
-            logger.info(f"✅ Set interaction feature: SameSmokeDrink")
-        
-        # Same gender interaction
-        user_gender = user_data.get('Gender', '')
-        cand_gender = flatmate_data.get('Gender', '')
-        if user_gender == cand_gender and user_gender:
-            feature_dict['SameGender'] = 1
-            logger.info(f"✅ Set interaction feature: SameGender")
-        
-        # Same Saturday preference interaction
-        user_saturday = user_data.get('Saturday Twin', '')
-        cand_saturday = flatmate_data.get('Saturday Twin', '')
-        if user_saturday == cand_saturday and user_saturday:
-            feature_dict['SameSaturday'] = 1
-            logger.info(f"✅ Set interaction feature: SameSaturday")
-        
-        # Same guest/host preference interaction
-        user_guest = user_data.get('Guest/Host', '')
-        cand_guest = flatmate_data.get('Guest/Host', '')
-        if user_guest == cand_guest and user_guest:
-            feature_dict['SameGuestHost'] = 1
-            logger.info(f"✅ Set interaction feature: SameGuestHost")
-        
-        # Debug: Print some of the features being set
-        matched_features = sum(1 for col in model_columns if col in feature_dict)
-        logger.info(f"Generated {len(feature_dict)} features, matched {matched_features} out of {len(model_columns)} model features")
-        
-        # Map to model columns
-        for i, col in enumerate(model_columns):
-            if col in feature_dict:
-                features[i] = feature_dict[col]
-        
-        return features.reshape(1, -1)
-    
-    except Exception as e:
-        logger.error(f"Error encoding features: {str(e)}")
-        raise
-
-@app.route('/predict', methods=['POST'])
-def predict_compatibility():
-    """Predict compatibility between user and flatmate"""
-    try:
-        data = request.json
-        
-        if not data:
-            return jsonify({"error": "No data provided"}), 400
-        
-        user_data = data.get('user', {})
-        flatmate_data = data.get('flatmate', {})
-        
-        if not user_data or not flatmate_data:
-            return jsonify({"error": "Both user and flatmate data required"}), 400        # Check for perfect match before ML prediction
-        is_perfect_match = (
-            user_data.get('City') == flatmate_data.get('City') and
-            user_data.get('Locality') == flatmate_data.get('Locality') and
-            user_data.get('Budget') == flatmate_data.get('Budget') and
-            user_data.get('Eating Preference') == flatmate_data.get('Eating Preference') and
-            user_data.get('Cleanliness Spook') == flatmate_data.get('Cleanliness Spook') and
-            user_data.get('Smoke/Drink') == flatmate_data.get('Smoke/Drink') and
-            user_data.get('Saturday Twin') == flatmate_data.get('Saturday Twin') and
-            user_data.get('Guest/Host') == flatmate_data.get('Guest/Host') and
-            user_data.get('Gender') == flatmate_data.get('Gender')
+        # Hosting compatibility
+        feature_dict['hosting_compatibility'] = calculate_hosting_compatibility(
+            user_data.get('hostingStyle'), candidate_data.get('hostingStyle')
         )
         
-        if is_perfect_match:
-            logger.info("🎯 PERFECT MATCH DETECTED! Returning 100%")
-            return jsonify({
-                "compatibility_score": 100.0,
-                "confidence": "high",
-                "model_used": "perfect_match_detection"
-            })
-            
-        # Encode features
-        features = encode_features(user_data, flatmate_data)
+        # Cleanliness compatibility
+        user_cleanliness = user_data.get('cleanliness', 3)
+        cand_cleanliness = candidate_data.get('cleanliness', 3)
+        feature_dict['cleanliness_difference'] = abs(user_cleanliness - cand_cleanliness)
+        feature_dict['cleanliness_compatibility'] = 1 if feature_dict['cleanliness_difference'] <= 1 else 0
         
-        # Make prediction
-        prediction = model.predict(features)[0]  # Use predict() for regression
-        compatibility_score = float(prediction)
+        # Substance use compatibility
+        feature_dict['smoking_compatibility'] = 1 if user_data.get('smokingHabits') == candidate_data.get('smokingHabits') else 0
+        feature_dict['drinking_compatibility'] = 1 if user_data.get('drinkingHabits') == candidate_data.get('drinkingHabits') else 0
         
-        # Debug logging
-        logger.info(f"Raw prediction from model: {prediction}")
-        logger.info(f"Compatibility score: {compatibility_score}")
+        # Interest overlaps
+        feature_dict['hobbies_overlap'] = calculate_array_overlap(
+            user_data.get('hobbies', ''), candidate_data.get('hobbies', '')
+        )
+        feature_dict['interests_overlap'] = calculate_array_overlap(
+            user_data.get('interests', ''), candidate_data.get('interests', '')
+        )
+        feature_dict['music_overlap'] = calculate_array_overlap(
+            user_data.get('musicGenres', ''), candidate_data.get('musicGenres', '')
+        )
+        feature_dict['sports_overlap'] = calculate_array_overlap(
+            user_data.get('sportsActivities', ''), candidate_data.get('sportsActivities', '')
+        )
+        feature_dict['language_overlap'] = calculate_array_overlap(
+            user_data.get('languagesSpoken', ''), candidate_data.get('languagesSpoken', '')
+        )
         
-        # Ensure score is between 0-100
-        compatibility_percentage = max(0, min(100, round(compatibility_score, 2)))
+        # Pet compatibility
+        feature_dict['pet_ownership_compatibility'] = calculate_pet_compatibility(
+            user_data.get('petOwnership'), candidate_data.get('petOwnership'),
+            user_data.get('petPreference'), candidate_data.get('petPreference')
+        )
         
-        logger.info(f"Final prediction returned: {compatibility_percentage}%")
+        # Map feature dictionary to feature vector
+        for i, feature_name in enumerate(model_columns):
+            if feature_name in feature_dict:
+                features[i] = feature_dict[feature_name]
         
-        return jsonify({
-            "compatibility_score": compatibility_percentage,
-            "confidence": "high",
-            "model_used": "trained_random_forest"
-        })
-    
+        logger.info(f"✅ Successfully encoded {len([f for f in feature_dict.values() if f != 0])} non-zero features")
+        return features.reshape(1, -1)
+        
     except Exception as e:
-        logger.error(f"Prediction error: {str(e)}")
-        return jsonify({"error": f"Prediction failed: {str(e)}"}), 500
+        logger.error(f"❌ Error encoding enhanced features: {str(e)}")
+        # Return basic feature vector
+        return np.zeros((1, len(model_columns)))
 
-@app.route('/batch-predict', methods=['POST'])
-def batch_predict():
-    """Predict compatibility for multiple flatmates"""
+@app.route('/predict-enhanced', methods=['POST'])
+def predict_enhanced():
+    """Enhanced prediction endpoint using new optimized fields"""
     try:
         data = request.json
-        user_data = data.get('user', {})
-        flatmates = data.get('flatmates', [])
+        logger.info(f"🎯 Enhanced prediction request received")
         
-        if not user_data or not flatmates:
-            return jsonify({"error": "User data and flatmates array required"}), 400
+        if not isinstance(data, list):
+            return jsonify({"error": "Expected list of user-candidate pairs"}), 400
         
         predictions = []
         
-        for flatmate in flatmates:
-            try:
-                features = encode_features(user_data, flatmate)
-                prediction = model.predict(features)[0]  # Use predict() for regression
-                compatibility_score = max(0, min(100, round(float(prediction), 2)))
-                
-                predictions.append({
-                    "flatmate_id": flatmate.get('id', 'unknown'),
-                    "compatibility_score": compatibility_score,
-                    "confidence": "high"
-                })
-            except Exception as e:
-                logger.warning(f"Failed to predict for flatmate {flatmate.get('id', 'unknown')}: {str(e)}")
-                predictions.append({
-                    "flatmate_id": flatmate.get('id', 'unknown'),
-                    "compatibility_score": 0,
-                    "confidence": "low",
-                    "error": str(e)
-                })
+        for pair in data:
+            user_data = pair.get('user', {})
+            candidate_data = pair.get('candidate', {})
+            
+            # Encode features using enhanced feature engineering
+            features = encode_enhanced_features(user_data, candidate_data)
+            
+            # Get prediction
+            prediction = model.predict(features)[0]
+            predictions.append(max(10, min(95, int(prediction))))
         
-        return jsonify({
-            "predictions": predictions,
-            "model_used": "trained_random_forest",
-            "total_processed": len(predictions)
-        })
-    
+        logger.info(f"✅ Generated {len(predictions)} enhanced predictions")
+        return jsonify({"match_percentages": predictions})
+        
     except Exception as e:
-        logger.error(f"Batch prediction error: {str(e)}")
-        return jsonify({"error": f"Batch prediction failed: {str(e)}"}), 500
+        logger.error(f"❌ Enhanced prediction error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/model-info', methods=['GET'])
+def model_info():
+    """Get information about the enhanced model"""
+    try:
+        return jsonify({
+            "model_type": "Enhanced Flatmate Matching Model",
+            "features_count": len(model_columns),
+            "key_features": [
+                "Direct optimized registration fields",
+                "Rich feature engineering",
+                "Interest overlap calculations",
+                "Compatibility scoring",
+                "No profile mapping needed"
+            ],
+            "supported_fields": [
+                "sleepPattern", "dietaryPrefs", "smokingHabits", "drinkingHabits",
+                "socialStyle", "hostingStyle", "weekendStyle", "personalityType",
+                "hobbies", "interests", "musicGenres", "sportsActivities",
+                "petOwnership", "petPreference", "languagesSpoken"
+            ]
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    # Load model on startup
-    if load_model():
-        logger.info("Starting Flask ML service...")
-        port = int(os.environ.get('PORT', 5000))
-        app.run(host='0.0.0.0', port=port, debug=False)
-    else:
-        logger.error("Failed to load model. Exiting...")
-        exit(1)
+    port = int(os.environ.get('PORT', 5001))  # Use port 5001 for ML service
+    app.run(host='0.0.0.0', port=port, debug=False)
