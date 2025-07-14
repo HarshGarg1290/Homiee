@@ -127,9 +127,11 @@ export const login = async (req, res) => {
         gender: true,
         profession: true,
         bio: true,
+        phone: true,
         city: true,
         locality: true,
         budget: true,
+        moveInDate: true,
         sleepPattern: true,
         dietaryPrefs: true,
         cleanliness: true,
@@ -187,29 +189,48 @@ export const updateProfile = async (req, res) => {
     // Handle moveInDate conversion and validation
     if (updateData.moveInDate !== undefined) {
       // If it's an empty string, null, or undefined, set to null
-      if (updateData.moveInDate === '' || updateData.moveInDate === null || updateData.moveInDate === undefined) {
+      if (!updateData.moveInDate || updateData.moveInDate === '' || updateData.moveInDate === null) {
         updateData.moveInDate = null;
       } else {
-        // Try to parse the date - handle both date strings and datetime strings
-        let parsedDate;
-        // If it's just a date string (YYYY-MM-DD), add time to make it a valid DateTime
-        if (typeof updateData.moveInDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(updateData.moveInDate)) {
-          // Add default time (noon) to make it a valid DateTime
-          parsedDate = new Date(updateData.moveInDate + 'T12:00:00.000Z');
+        // Handle date string (YYYY-MM-DD format from HTML date input)
+        if (typeof updateData.moveInDate === 'string') {
+          // Check if it's a valid date string
+          if (/^\d{4}-\d{2}-\d{2}$/.test(updateData.moveInDate)) {
+            // Convert to proper DateTime with UTC timezone
+            const parsedDate = new Date(updateData.moveInDate + 'T00:00:00.000Z');
+            if (!isNaN(parsedDate.getTime())) {
+              updateData.moveInDate = parsedDate;
+            } else {
+              updateData.moveInDate = null;
+            }
+          } else {
+            // Try to parse other date formats
+            const parsedDate = new Date(updateData.moveInDate);
+            if (!isNaN(parsedDate.getTime())) {
+              updateData.moveInDate = parsedDate;
+            } else {
+              updateData.moveInDate = null;
+            }
+          }
+        } else if (updateData.moveInDate instanceof Date) {
+          // Already a Date object
+          if (!isNaN(updateData.moveInDate.getTime())) {
+            // Valid date, keep as is
+          } else {
+            updateData.moveInDate = null;
+          }
         } else {
-          // Try to parse as is
-          parsedDate = new Date(updateData.moveInDate);
-        }
-        if (isNaN(parsedDate.getTime())) {
-          // Invalid date, set to null
+          // Unknown format, set to null
           updateData.moveInDate = null;
-        } else {
-          // Valid date, convert to ISO string
-          updateData.moveInDate = parsedDate.toISOString();
         }
       }
     }
-    console.log('🔄 Processed update data:', updateData);
+    
+    console.log('🔄 Processed update data:', { 
+      ...updateData, 
+      moveInDate: updateData.moveInDate ? 'DATE_OBJECT' : updateData.moveInDate 
+    });
+    
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: updateData,
@@ -223,9 +244,11 @@ export const updateProfile = async (req, res) => {
         gender: true,
         profession: true,
         bio: true,
+        phone: true,
         city: true,
         locality: true,
         budget: true,
+        moveInDate: true,
         sleepPattern: true,
         dietaryPrefs: true,
         cleanliness: true,
