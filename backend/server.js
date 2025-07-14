@@ -8,6 +8,7 @@ import rateLimit from "express-rate-limit";
 import authRoutes from './routes/auth.js';
 import flatmateRoutes from './routes/flatmates.js';
 import savedFlatsRoutes from './routes/savedFlats.js';
+import neighborhoodRoutes from './routes/neighborhood.js';
 
 dotenv.config();
 const app = express();
@@ -73,6 +74,7 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/flatmates', flatmateRoutes);
 app.use('/api/saved-flats', savedFlatsRoutes);
+app.use('/api/neighborhood', neighborhoodRoutes);
 
 
 app.use((err, req, res, next) => {

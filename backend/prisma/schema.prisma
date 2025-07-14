@@ -66,3 +66,80 @@ model SavedFlat {
   @@unique([userId, flatId])
   @@map("saved_flats")
 }
+
+model Place {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   // gym, restaurant, park, mall, etc.
+  category    String   // fitness, food, entertainment, shopping, etc.
+  description String?
+  address     String
+  city        String
+  locality    String?
+  latitude    Float?
+  longitude   Float?
+  rating      Float?   @default(0)
+  priceRange  String?  // budget-friendly, moderate, expensive
+  tags        String[] // ["outdoor", "family-friendly", "pet-friendly", etc.]
+  website     String?
+  phone       String?
+  hours       String?  // operating hours
+  imageUrl    String?
+  isVerified  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("places")
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  type        String   // workshop, concert, meetup, sports, cultural, etc.
+  category    String   // music, sports, tech, food, art, etc.
+  venue       String
+  address     String
+  city        String
+  locality    String?
+  latitude    Float?
+  longitude   Float?
+  startDate   DateTime
+  endDate     DateTime?
+  price       Float?   @default(0)
+  maxAttendees Int?
+  tags        String[] // ["beginner-friendly", "outdoor", "networking", etc.]
+  organizer   String?
+  website     String?
+  phone       String?
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("events")
+}
+
+model Activity {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   // hobby, sport, learning, social, etc.
+  category    String   // fitness, creative, educational, social, etc.
+  description String?
+  difficulty  String?  // beginner, intermediate, advanced
+  duration    String?  // 30 mins, 1 hour, 2 hours, etc.
+  equipment   String[] // required equipment or materials
+  location    String   // indoor, outdoor, home, specific venue
+  groupSize   String?  // solo, small group, large group
+  ageGroup    String?  // kids, teens, adults, seniors, all ages
+  cost        String?  // free, low, medium, high
+  tags        String[] // ["creative", "physical", "mental", "social", etc.]
+  benefits    String[] // ["stress relief", "fitness", "skill building", etc.]
+  relatedInterests String[] // matching with user interests/hobbies
+  imageUrl    String?
+  isPopular   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("activities")
+}

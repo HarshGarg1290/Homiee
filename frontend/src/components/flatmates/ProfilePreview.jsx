@@ -86,7 +86,7 @@ const ProfilePreview = ({ user, onSearchClick }) => {
           🔍 Find My Matches
         </button>
         <button
-          onClick={() => window.location.href = '/profile-setup'}
+          onClick={() => window.location.href = '/profile'}
           className="flex-1 sm:flex-initial bg-gray-100 text-gray-700 py-3 px-6 rounded-xl font-medium hover:bg-gray-200 transition-all duration-200 border"
         >
           ✏️ Update Preferences
