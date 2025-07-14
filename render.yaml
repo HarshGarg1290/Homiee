@@ -1,12 +1,11 @@
 services:
   - type: web
     name: homiee-ml-service
-    env: python
-    region: oregon
+    runtime: python
     plan: free
+    rootDir: ml-service
     buildCommand: pip install --no-cache-dir -r requirements.txt
     startCommand: gunicorn --bind 0.0.0.0:$PORT app:app
-    healthCheckPath: /health
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
