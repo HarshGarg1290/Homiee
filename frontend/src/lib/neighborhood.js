@@ -1,4 +1,4 @@
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
 
 export async function getPersonalizedRecommendations(token) {
   const response = await fetch(`${BACKEND_URL}/api/neighborhood/recommendations`, {

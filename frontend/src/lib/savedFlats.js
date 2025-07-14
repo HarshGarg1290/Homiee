@@ -1,6 +1,6 @@
 // Frontend API for saved flats functionality
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
 
 // Generate a unique flat ID based on flat details (same as backend)
 export function generateFlatId(flatData) {
