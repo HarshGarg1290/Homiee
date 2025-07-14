@@ -7,10 +7,12 @@ import rateLimit from "express-rate-limit";
 // Import routes
 import authRoutes from './routes/auth.js';
 import flatmateRoutes from './routes/flatmates.js';
+import savedFlatsRoutes from './routes/savedFlats.js';
+import neighborhoodRoutes from './routes/neighborhood.js';
 
 dotenv.config();
 const app = express();
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 5000;
 
 // Trust proxy for Vercel deployment
 app.set('trust proxy', 1);
@@ -56,7 +58,10 @@ app.get('/', (req, res) => {
       'POST /api/auth/login',
       'POST /api/auth/register', 
       'GET /api/flatmates',
-      'POST /api/flatmates'
+      'POST /api/flatmates',
+      'POST /api/saved-flats/save',
+      'POST /api/saved-flats/unsave',
+      'GET /api/saved-flats/:userId'
     ]
   });
 });
@@ -68,6 +73,8 @@ app.get('/health', (req, res) => {
 // Routes
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/flatmates', flatmateRoutes);
+app.use('/api/saved-flats', savedFlatsRoutes);
+app.use('/api/neighborhood', neighborhoodRoutes);
 
 
 app.use((err, req, res, next) => {

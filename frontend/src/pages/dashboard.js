@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/router";
 import { useAuth } from "../contexts/AuthContext";
-import { User, MapPin, Heart, Settings, Users, Home } from "lucide-react";
+import { User, MapPin, Heart, Settings, Users, Home, Bookmark, Navigation } from "lucide-react";
 import Navbar from "../components/Navbar";
 export default function Dashboard() {
   const router = useRouter();
@@ -120,7 +120,7 @@ export default function Dashboard() {
             </div>
           </motion.div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -161,13 +161,55 @@ export default function Dashboard() {
               Browse Flats →
             </div>
           </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            onClick={() => router.push('/saved-flats')}
+            className="bg-white rounded-xl shadow-lg border border-gray-100 p-8 cursor-pointer hover:shadow-xl transition-all duration-300 group"
+          >
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 bg-gradient-to-r from-[#f38406] to-[#e07405] rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Bookmark className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-800">Saved Flats</h3>
+            </div>
+            <p className="text-gray-600 mb-4">
+              View all the flats you've saved while browsing. Keep track of your favorite options in one place.
+            </p>
+            <div className="text-[#f38406] font-medium group-hover:translate-x-2 transition-transform inline-flex items-center gap-2">
+              View Saved →
+            </div>
+          </motion.div>
+
+          {/* Explore Your Neighbourhood Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            onClick={() => router.push('/explore')}
+            className="bg-white rounded-xl shadow-lg border border-gray-100 p-8 cursor-pointer hover:shadow-xl transition-all duration-300 group"
+          >
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 bg-gradient-to-r from-[#f38406] to-[#e07405] rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Navigation className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-800">Explore Neighbourhood</h3>
+            </div>
+            <p className="text-gray-600 mb-4">
+              Discover places, events, and activities around your area. Find gyms, restaurants, events, and more based on your interests.
+            </p>
+            <div className="text-[#f38406] font-medium group-hover:translate-x-2 transition-transform inline-flex items-center gap-2">
+              Explore Now →
+            </div>
+          </motion.div>
         </div>
         {/* Profile Completion */}
         {(!user.bio || !user.city || !user.hobbies?.length) && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
+            transition={{ delay: 0.8 }}
             className="bg-orange-50 border border-orange-200 rounded-xl p-6 mt-8"
           >
             <h3 className="text-lg font-semibold text-orange-800 mb-2">Complete Your Profile</h3>

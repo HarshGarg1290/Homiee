@@ -8,55 +8,138 @@ datasource db {
 }
 
 model User {
-  id       String  @id @default(cuid())
-  email    String  @unique
-  password String
-  
-  // Basic Information (consolidated)
-  name        String?
-  firstName   String?
-  lastName    String?
-  phone       String?
-  age         Int?
-  gender      String?
-  profession  String?
-  bio         String?  // Consolidated: removed 'about' duplicate
-  
-  // Location & Budget (optimized)
-  city        String?
-  locality    String?  // Consolidated: removed 'location' duplicate
-  budget      String?
-  moveInDate  DateTime? // Changed: String -> DateTime for proper date handling
-  
-  // Lifestyle Preferences (consolidated & structured)
-  sleepPattern     String?  // Early Bird, Night Owl, Flexible
-  dietaryPrefs     String?  // Consolidated: removed 'eatingPreference' duplicate  
-  cleanliness      Int      @default(3) // Consolidated: removed string version, kept 1-5 scale
-  
-  // Substance Use (consolidated)
-  smokingHabits    String?  // Never, Occasionally, Regularly
-  drinkingHabits   String?  // Never, Occasionally, Socially, Regularly
-  
-  // Social & Personality (optimized)
-  personalityType  String?  // Consolidated: removed 'personality' duplicate
-  socialStyle      String?  // Party Person, Homebody, Social, Balanced
-  hostingStyle     String?  // I like hosting, I like being guest, Either
-  weekendStyle     String?  // Clubbing, House parties, Chill at home, Based on vibe
-  
-  // Interests (well-structured arrays)
+  id               String      @id @default(cuid())
+  email            String      @unique
+  password         String
+  name             String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  budget           String?
+  city             String?
   hobbies          String[]
+  locality         String?
+  age              Int?
+  bio              String?
+  dietaryPrefs     String?
+  firstName        String?
+  gender           String?
   interests        String[]
+  lastName         String?
   musicGenres      String[]
-  sportsActivities String[]
-  languagesSpoken  String[]
-  
-  // Pet Preferences (consolidated)
-  petOwnership     String?
+  personalityType  String?
   petPreference    String?
-  
-  // Timestamps
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  phone            String?
+  profession       String?
+  sportsActivities String[]
+  sleepPattern     String?
+  drinkingHabits   String?
+  hostingStyle     String?
+  languagesSpoken  String[]
+  petOwnership     String?
+  smokingHabits    String?
+  socialStyle      String?
+  weekendStyle     String?
+  cleanliness      Int         @default(3)
+  moveInDate       DateTime?
+  savedFlats       SavedFlat[]
 
   @@map("users")
+}
+
+model SavedFlat {
+  id          String   @id @default(cuid())
+  userId      String
+  gender      String?
+  flatmateReq String?
+  message     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  bhk         String?
+  budget      String?
+  city        String   @default("")
+  flatId      String   @default("")
+  sourceId    String?
+  subregion   String?
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Unique constraint to prevent saving the same flat multiple times
+  @@unique([userId, flatId])
+  @@map("saved_flats")
+}
+
+model Place {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   // gym, restaurant, park, mall, etc.
+  category    String   // fitness, food, entertainment, shopping, etc.
+  description String?
+  address     String
+  city        String
+  locality    String?
+  latitude    Float?
+  longitude   Float?
+  rating      Float?   @default(0)
+  priceRange  String?  // budget-friendly, moderate, expensive
+  tags        String[] // ["outdoor", "family-friendly", "pet-friendly", etc.]
+  website     String?
+  phone       String?
+  hours       String?  // operating hours
+  imageUrl    String?
+  isVerified  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("places")
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  type        String   // workshop, concert, meetup, sports, cultural, etc.
+  category    String   // music, sports, tech, food, art, etc.
+  venue       String
+  address     String
+  city        String
+  locality    String?
+  latitude    Float?
+  longitude   Float?
+  startDate   DateTime
+  endDate     DateTime?
+  price       Float?   @default(0)
+  maxAttendees Int?
+  tags        String[] // ["beginner-friendly", "outdoor", "networking", etc.]
+  organizer   String?
+  website     String?
+  phone       String?
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("events")
+}
+
+model Activity {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   // hobby, sport, learning, social, etc.
+  category    String   // fitness, creative, educational, social, etc.
+  description String?
+  difficulty  String?  // beginner, intermediate, advanced
+  duration    String?  // 30 mins, 1 hour, 2 hours, etc.
+  equipment   String[] // required equipment or materials
+  location    String   // indoor, outdoor, home, specific venue
+  groupSize   String?  // solo, small group, large group
+  ageGroup    String?  // kids, teens, adults, seniors, all ages
+  cost        String?  // free, low, medium, high
+  tags        String[] // ["creative", "physical", "mental", "social", etc.]
+  benefits    String[] // ["stress relief", "fitness", "skill building", etc.]
+  relatedInterests String[] // matching with user interests/hobbies
+  imageUrl    String?
+  isPopular   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("activities")
 }
