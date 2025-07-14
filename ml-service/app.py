@@ -33,6 +33,10 @@ def load_enhanced_model():
         model_path = os.path.join(os.path.dirname(__file__), 'flatmate_match_model.pkl')
         columns_path = os.path.join(os.path.dirname(__file__), 'flatmate_model_columns.pkl')
         
+  
+        import warnings
+        warnings.filterwarnings('ignore', category=UserWarning)
+        
         model = joblib.load(model_path)
         model_columns = joblib.load(columns_path)
         logger.info(f"✅ Enhanced model loaded successfully with {len(model_columns)} features")
