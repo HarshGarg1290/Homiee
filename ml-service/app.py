@@ -17,6 +17,19 @@ CORS(app)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+@app.route('/', methods=['GET'])
+def home():
+    """Root endpoint with service information"""
+    return jsonify({
+        "service": "Homiee ML Service",
+        "status": "running",
+        "version": "1.0.0",
+        "endpoints": {
+            "/health": "Health check",
+            "/predict": "Flatmate compatibility prediction"
+        }
+    }), 200
+
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
@@ -33,9 +46,19 @@ def load_enhanced_model():
         model_path = os.path.join(os.path.dirname(__file__), 'flatmate_match_model.pkl')
         columns_path = os.path.join(os.path.dirname(__file__), 'flatmate_model_columns.pkl')
         
-  
+        # Handle numpy compatibility issues
         import warnings
         warnings.filterwarnings('ignore', category=UserWarning)
+        warnings.filterwarnings('ignore', category=FutureWarning)
+        
+        # Try to fix numpy._core import issue
+        try:
+            import numpy as np
+            # Force numpy to initialize properly
+            np.array([1, 2, 3])
+        except ImportError as numpy_error:
+            logger.warning(f"Numpy import issue: {numpy_error}")
+            # Continue anyway, joblib might still work
         
         model = joblib.load(model_path)
         model_columns = joblib.load(columns_path)
