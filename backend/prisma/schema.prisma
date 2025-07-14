@@ -8,55 +8,61 @@ datasource db {
 }
 
 model User {
-  id       String  @id @default(cuid())
-  email    String  @unique
-  password String
-  
-  // Basic Information (consolidated)
-  name        String?
-  firstName   String?
-  lastName    String?
-  phone       String?
-  age         Int?
-  gender      String?
-  profession  String?
-  bio         String?  // Consolidated: removed 'about' duplicate
-  
-  // Location & Budget (optimized)
-  city        String?
-  locality    String?  // Consolidated: removed 'location' duplicate
-  budget      String?
-  moveInDate  DateTime? // Changed: String -> DateTime for proper date handling
-  
-  // Lifestyle Preferences (consolidated & structured)
-  sleepPattern     String?  // Early Bird, Night Owl, Flexible
-  dietaryPrefs     String?  // Consolidated: removed 'eatingPreference' duplicate  
-  cleanliness      Int      @default(3) // Consolidated: removed string version, kept 1-5 scale
-  
-  // Substance Use (consolidated)
-  smokingHabits    String?  // Never, Occasionally, Regularly
-  drinkingHabits   String?  // Never, Occasionally, Socially, Regularly
-  
-  // Social & Personality (optimized)
-  personalityType  String?  // Consolidated: removed 'personality' duplicate
-  socialStyle      String?  // Party Person, Homebody, Social, Balanced
-  hostingStyle     String?  // I like hosting, I like being guest, Either
-  weekendStyle     String?  // Clubbing, House parties, Chill at home, Based on vibe
-  
-  // Interests (well-structured arrays)
+  id               String      @id @default(cuid())
+  email            String      @unique
+  password         String
+  name             String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  budget           String?
+  city             String?
   hobbies          String[]
+  locality         String?
+  age              Int?
+  bio              String?
+  dietaryPrefs     String?
+  firstName        String?
+  gender           String?
   interests        String[]
+  lastName         String?
   musicGenres      String[]
-  sportsActivities String[]
-  languagesSpoken  String[]
-  
-  // Pet Preferences (consolidated)
-  petOwnership     String?
+  personalityType  String?
   petPreference    String?
-  
-  // Timestamps
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  phone            String?
+  profession       String?
+  sportsActivities String[]
+  sleepPattern     String?
+  drinkingHabits   String?
+  hostingStyle     String?
+  languagesSpoken  String[]
+  petOwnership     String?
+  smokingHabits    String?
+  socialStyle      String?
+  weekendStyle     String?
+  cleanliness      Int         @default(3)
+  moveInDate       DateTime?
+  savedFlats       SavedFlat[]
 
   @@map("users")
+}
+
+model SavedFlat {
+  id          String   @id @default(cuid())
+  userId      String
+  gender      String?
+  flatmateReq String?
+  message     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  bhk         String?
+  budget      String?
+  city        String   @default("")
+  flatId      String   @default("")
+  sourceId    String?
+  subregion   String?
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Unique constraint to prevent saving the same flat multiple times
+  @@unique([userId, flatId])
+  @@map("saved_flats")
 }

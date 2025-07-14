@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
+import { useAuth } from "../contexts/AuthContext";
+import { saveFlat, unsaveFlat, generateFlatId, checkFlatSaved } from "../lib/savedFlats";
 import {
 	MapPin,
 	IndianRupee,
@@ -11,6 +13,8 @@ import {
 	X,
 	ChevronRight,
 	Loader2,
+	Heart,
+	HeartCrack,
 } from "lucide-react";
 // Loading skeleton component for better UX
 const FormFieldSkeleton = () => (
@@ -21,6 +25,8 @@ const FormFieldSkeleton = () => (
 );
 export default function FlatFinder() {
 	const router = useRouter();
+	const { user, isAuthenticated } = useAuth();
+	
 	// State for filters
 	const [selectedCity, setSelectedCity] = useState("");
 	const [selectedSubregion, setSelectedSubregion] = useState("");
@@ -29,17 +35,24 @@ export default function FlatFinder() {
 	const [isSearching, setIsSearching] = useState(false);
 	const [showResults, setShowResults] = useState(false);
 	const [expandedListing, setExpandedListing] = useState(null);
+	
 	// State for data
 	const [listings, setListings] = useState([]);
 	const [filteredListings, setFilteredListings] = useState([]);
 	const [cities, setCities] = useState({});
 	const [genderOptions, setGenderOptions] = useState([]);
 	const [budgetRanges, setBudgetRanges] = useState([]);
+	
 	// Loading states for better UX
 	const [isLoadingData, setIsLoadingData] = useState(true);
 	const [dataLoadError, setDataLoadError] = useState(null);
+	
 	// Cache to avoid repeated API calls
 	const [dataCache, setDataCache] = useState(null);
+	
+	// Saved flats state
+	const [savedFlatsMap, setSavedFlatsMap] = useState(new Map());
+	const [savingFlat, setSavingFlat] = useState(null);
 	useEffect(() => {		const cachedData = localStorage.getItem("flats-form-data");
 		const cacheTimestamp = localStorage.getItem("flats-form-data-timestamp");
 		const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
@@ -140,7 +153,6 @@ export default function FlatFinder() {
 			localStorage.setItem("flats-form-data", JSON.stringify(processedData));
 			localStorage.setItem("flats-form-data-timestamp", Date.now().toString());
 		} catch (error) {
-			console.error("Error fetching listings:", error);
 			setDataLoadError(error.message);
 		} finally {
 			setIsLoadingData(false);
@@ -213,6 +225,88 @@ export default function FlatFinder() {
 	};
 	const hasActiveFilters =
 		selectedCity || selectedSubregion || selectedGender || selectedBudget;
+
+	// Check saved status for listings when user is authenticated
+	useEffect(() => {
+		if (isAuthenticated && user && showResults && filteredListings.length > 0) {
+			checkSavedStatus();
+		}
+	}, [isAuthenticated, user, showResults, filteredListings]);
+
+	// Also check saved status when component mounts and user is already authenticated
+	useEffect(() => {
+		if (isAuthenticated && user && filteredListings.length > 0) {
+			checkSavedStatus();
+		}
+	}, [isAuthenticated, user, filteredListings]);
+
+	const checkSavedStatus = async () => {
+		if (!user || filteredListings.length === 0) return;
+		
+		const savedStatusMap = new Map();
+		
+		// Check saved status for all visible listings
+		for (const listing of filteredListings) {
+			const flatId = generateFlatId(listing);
+			try {
+				const isSaved = await checkFlatSaved(user.id, flatId);
+				savedStatusMap.set(flatId, isSaved);
+			} catch (error) {
+				savedStatusMap.set(flatId, false);
+			}
+		}
+		
+		setSavedFlatsMap(savedStatusMap);
+	};
+
+	const handleSaveFlat = async (listing) => {
+		if (!isAuthenticated || !user) {
+			router.push('/login');
+			return;
+		}
+
+		const flatId = generateFlatId(listing);
+		
+		// Prevent multiple simultaneous operations on the same flat
+		if (savingFlat === flatId) {
+			return;
+		}
+		
+		setSavingFlat(flatId);
+
+		try {
+			const isSaved = savedFlatsMap.get(flatId);
+			
+			if (isSaved) {
+				// Unsave the flat
+				await unsaveFlat(user.id, flatId);
+				setSavedFlatsMap(prev => new Map(prev.set(flatId, false)));
+			} else {
+				// Save the flat
+				try {
+					await saveFlat(user.id, listing);
+					setSavedFlatsMap(prev => new Map(prev.set(flatId, true)));
+				} catch (error) {
+					// If flat is already saved (race condition), just update the UI
+					if (error.status === 409 || (error.message && error.message.includes('already saved'))) {
+						setSavedFlatsMap(prev => new Map(prev.set(flatId, true)));
+					} else {
+						throw error; // Re-throw other errors
+					}
+				}
+			}
+		} catch (error) {
+			// Refresh the saved status to get the current state
+			try {
+				const currentStatus = await checkFlatSaved(user.id, flatId);
+				setSavedFlatsMap(prev => new Map(prev.set(flatId, currentStatus)));
+			} catch (checkError) {
+				// Silent error handling
+			}
+		} finally {
+			setSavingFlat(null);
+		}
+	};
 	return (
 		<div className="min-h-screen bg-gray-50 font-['Montserrat',sans-serif]">
 			<Head>
@@ -449,7 +543,12 @@ export default function FlatFinder() {
 							</div>
 						) : (
 							<div className="space-y-3 sm:space-y-4">
-								{filteredListings.map((listing, index) => (
+								{filteredListings.map((listing, index) => {
+									const flatId = generateFlatId(listing);
+									const isSaved = savedFlatsMap.get(flatId) || false;
+									const isSaving = savingFlat === flatId;
+									
+									return (
 									<div
 										key={index}
 										className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow rounded-xl overflow-hidden"
@@ -457,9 +556,32 @@ export default function FlatFinder() {
 										<div className="p-4 sm:p-6">
 											<div className="flex flex-col sm:flex-row sm:items-start justify-between mb-3 sm:mb-4 gap-3 sm:gap-0">
 												<div className="flex-1">
-													<h4 className="font-semibold text-gray-900 text-base sm:text-lg mb-2">
-														{listing.BHK} BHK in {listing["Sub region"]}
-													</h4>
+													<div className="flex items-center justify-between mb-2">
+														<h4 className="font-semibold text-gray-900 text-base sm:text-lg">
+															{listing.BHK} BHK in {listing["Sub region"]}
+														</h4>
+														{/* Save/Unsave Button */}
+														{isAuthenticated && (
+															<button
+																onClick={() => handleSaveFlat(listing)}
+																disabled={isSaving}
+																className={`p-2 rounded-full transition-all duration-200 ${
+																	isSaved 
+																		? 'text-red-500 hover:bg-red-50' 
+																		: 'text-gray-400 hover:text-red-500 hover:bg-red-50'
+																} ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
+																title={isSaved ? 'Remove from saved' : 'Save flat'}
+															>
+																{isSaving ? (
+																	<Loader2 className="w-5 h-5 animate-spin" />
+																) : isSaved ? (
+																	<Heart className="w-5 h-5 fill-current" />
+																) : (
+																	<Heart className="w-5 h-5" />
+																)}
+															</button>
+														)}
+													</div>
 													<div className="flex items-center text-gray-500 text-sm mb-2 sm:mb-3">
 														<MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
 														<span className="truncate">
@@ -521,7 +643,7 @@ export default function FlatFinder() {
 											)}
 										</div>
 									</div>
-								))}
+								)})})
 							</div>
 						)}
 					</div>
