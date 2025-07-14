@@ -7,15 +7,19 @@ import rateLimit from "express-rate-limit";
 // Import routes
 import authRoutes from './routes/auth.js';
 import flatmateRoutes from './routes/flatmates.js';
-import healthRoutes from './routes/health.js';
+
 dotenv.config();
 const app = express();
 const port = process.env.PORT || 8000;
+
+// Trust proxy for Vercel deployment
+app.set('trust proxy', 1);
+
 // Security middleware
 app.use(helmet());
 // CORS configuration
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: process.env.FRONTEND_URL || ['http://localhost:3000', 'https://homiee-five.vercel.app'],
   credentials: true
 }));
 // Rate limiting
@@ -41,19 +45,31 @@ const authLimiter = rateLimit({
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-// Routes
-app.use('/api', healthRoutes);
-app.use('/api/auth', authLimiter, authRoutes);
-app.use('/api/flatmates', flatmateRoutes);
-// Legacy health check endpoint for backward compatibility
-app.get('/api/health', (req, res) => {
+
+// Health check route
+app.get('/', (req, res) => {
   res.json({
     success: true,
-    message: 'Server is running',
-    timestamp: new Date().toISOString()
+    message: 'Homiee Backend API is running!',
+    timestamp: new Date().toISOString(),
+    endpoints: [
+      'POST /api/auth/login',
+      'POST /api/auth/register', 
+      'GET /api/flatmates',
+      'POST /api/flatmates'
+    ]
   });
 });
-// Global error handler
+
+app.get('/health', (req, res) => {
+  res.json({ success: true, status: 'healthy' });
+});
+
+// Routes
+app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/flatmates', flatmateRoutes);
+
+
 app.use((err, req, res, next) => {
   console.error('Error:', err);
   res.status(500).json({
@@ -74,10 +90,20 @@ const testDBConnection = async () => {
     console.log("✅ Database connected successfully");
   } catch (error) {
     console.log("❌ Database connection error:", error);
-    process.exit(1);
+    if (process.env.NODE_ENV !== 'production') {
+      process.exit(1);
+    }
   }
 };
+
 testDBConnection();
-app.listen(port, () => {
-  console.log(`🚀 Server started on port ${port}`);
-});
+
+// Only start the server if not in Vercel environment
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  app.listen(port, () => {
+    console.log(`🚀 Server started on port ${port}`);
+  });
+}
+
+// Export the app for Vercel
+export default app;
