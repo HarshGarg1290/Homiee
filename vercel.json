@@ -21,17 +21,16 @@
 		}
 	],
 	"env": {
-		"ML_SERVICE_URL": "https://homiee-production.up.railway.app",
+		"ML_SERVICE_URL": "@ml-service-url",
 		"NODE_ENV": "production",
 		"DATABASE_URL": "@database-url",
 		"JWT_SECRET": "@jwt-secret",
 		"FRONTEND_URL": "@frontend-url",
 		"NEXT_PUBLIC_API_URL": "@next-public-api-url",
+		"NEXT_PUBLIC_BACKEND_URL": "@next-public-backend-url",
 		"BACKEND_URL": "@backend-url",
 		"GOOGLE_SHEET_ID": "@google-sheet-id",
 		"GOOGLE_CLIENT_EMAIL": "@google-client-email",
 		"GOOGLE_PRIVATE_KEY": "@google-private-key"
-	},
-	"installCommand": "npm run install:all",
-	"buildCommand": "npm run build"
+	}
 }

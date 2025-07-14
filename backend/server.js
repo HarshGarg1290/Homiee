@@ -12,7 +12,7 @@ import neighborhoodRoutes from './routes/neighborhood.js';
 
 dotenv.config();
 const app = express();
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 5000;
 
 // Trust proxy for Vercel deployment
 app.set('trust proxy', 1);
