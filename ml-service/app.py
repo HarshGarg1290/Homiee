@@ -48,53 +48,60 @@ def load_enhanced_model():
         
         # Handle numpy compatibility issues aggressively
         import warnings
+        import pickle
         warnings.filterwarnings('ignore')
         
         # Set numpy compatibility environment variables
         import os
         os.environ['NUMPY_EXPERIMENTAL_ARRAY_FUNCTION'] = '0'
+        os.environ['NPY_DISABLE_SVML'] = '1'
         
         # Import and configure numpy for compatibility
         import numpy as np
         
-        # Try to import the problematic numpy._core module manually if needed
+        # Force numpy to use older internal APIs if available
         try:
-            import numpy._core
+            # Try to monkey-patch numpy for compatibility
+            import numpy.core._multiarray_umath
         except ImportError:
-            # This is expected with older numpy versions, continue
             pass
-        
-        # Configure joblib to handle numpy compatibility
-        import sklearn
-        sklearn.set_config(assume_finite=True)
         
         logger.info(f"Loading model with numpy {np.__version__}")
         
-        # Load model with compatibility handling
-        try:
-            model = joblib.load(model_path)
-        except Exception as e:
-            # Try alternative loading method
-            logger.warning(f"Primary loading failed: {e}")
-            import pickle
-            with open(model_path, 'rb') as f:
-                model = pickle.load(f)
+        # Try multiple loading strategies
+        model_loaded = False
+        for attempt in range(3):
+            try:
+                if attempt == 0:
+                    # Standard joblib loading
+                    model = joblib.load(model_path)
+                    model_columns = joblib.load(columns_path)
+                elif attempt == 1:
+                    # Joblib with explicit mmap_mode
+                    model = joblib.load(model_path, mmap_mode=None)
+                    model_columns = joblib.load(columns_path, mmap_mode=None)
+                else:
+                    # Fallback to pickle
+                    with open(model_path, 'rb') as f:
+                        model = pickle.load(f)
+                    with open(columns_path, 'rb') as f:
+                        model_columns = pickle.load(f)
+                
+                # Test the model
+                test_features = np.zeros(len(model_columns))
+                prediction = model.predict([test_features])
+                
+                logger.info(f"✅ Model loaded successfully with {len(model_columns)} features (attempt {attempt + 1})")
+                logger.info(f"✅ Test prediction: {prediction[0]:.2f}")
+                model_loaded = True
+                break
+                
+            except Exception as e:
+                logger.warning(f"Loading attempt {attempt + 1} failed: {str(e)}")
+                if attempt == 2:  # Last attempt
+                    raise e
         
-        try:
-            model_columns = joblib.load(columns_path)
-        except Exception as e:
-            logger.warning(f"Primary column loading failed: {e}")
-            import pickle
-            with open(columns_path, 'rb') as f:
-                model_columns = pickle.load(f)
-        
-        # Test the model
-        test_features = np.zeros(len(model_columns))
-        prediction = model.predict([test_features])
-        
-        logger.info(f"✅ Model loaded successfully with {len(model_columns)} features")
-        logger.info(f"✅ Test prediction: {prediction[0]:.2f}")
-        return True
+        return model_loaded
         
     except Exception as e:
         logger.error(f"❌ Error loading enhanced model: {str(e)}")

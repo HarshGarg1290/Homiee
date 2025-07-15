@@ -7,7 +7,7 @@ services:
     buildCommand: |
       pip install --upgrade pip setuptools wheel
       pip install --no-cache-dir --prefer-binary --only-binary=numpy,pandas,scikit-learn -r requirements.txt
-      python fix_model_compatibility.py
+      python fix_model_compatibility.py || echo "Model compatibility fix failed, continuing..."
     startCommand: gunicorn --bind 0.0.0.0:$PORT app:app --timeout 120 --workers 1 --max-requests 1000
     envVars:
       - key: PYTHON_VERSION
