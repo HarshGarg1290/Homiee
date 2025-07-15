@@ -1,4 +1,4 @@
-// Animation variants for consistent animations across components
+
 export const animations = {
 	fadeInUp: {
 		hidden: { opacity: 0, y: 60 },
