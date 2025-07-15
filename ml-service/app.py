@@ -42,17 +42,20 @@ model_columns = None
 def load_enhanced_model():
     """Load the enhanced trained model and feature columns"""
     global model, model_columns
+    
+    # Import required modules at the beginning
+    import warnings
+    import pickle
+    import os
+    
     try:
         model_path = os.path.join(os.path.dirname(__file__), 'flatmate_match_model.pkl')
         columns_path = os.path.join(os.path.dirname(__file__), 'flatmate_model_columns.pkl')
         
         # Handle numpy compatibility issues aggressively
-        import warnings
-        import pickle
         warnings.filterwarnings('ignore')
         
         # Set numpy compatibility environment variables
-        import os
         os.environ['NUMPY_EXPERIMENTAL_ARRAY_FUNCTION'] = '0'
         os.environ['NPY_DISABLE_SVML'] = '1'
         
