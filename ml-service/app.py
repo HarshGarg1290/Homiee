@@ -46,23 +46,54 @@ def load_enhanced_model():
         model_path = os.path.join(os.path.dirname(__file__), 'flatmate_match_model.pkl')
         columns_path = os.path.join(os.path.dirname(__file__), 'flatmate_model_columns.pkl')
         
-        # Handle numpy compatibility issues
+        # Handle numpy compatibility issues aggressively
         import warnings
-        warnings.filterwarnings('ignore', category=UserWarning)
-        warnings.filterwarnings('ignore', category=FutureWarning)
+        warnings.filterwarnings('ignore')
         
-        # Try to fix numpy._core import issue
+        # Set numpy compatibility environment variables
+        import os
+        os.environ['NUMPY_EXPERIMENTAL_ARRAY_FUNCTION'] = '0'
+        
+        # Import and configure numpy for compatibility
+        import numpy as np
+        
+        # Try to import the problematic numpy._core module manually if needed
         try:
-            import numpy as np
-            # Force numpy to initialize properly
-            np.array([1, 2, 3])
-        except ImportError as numpy_error:
-            logger.warning(f"Numpy import issue: {numpy_error}")
-            # Continue anyway, joblib might still work
+            import numpy._core
+        except ImportError:
+            # This is expected with older numpy versions, continue
+            pass
         
-        model = joblib.load(model_path)
-        model_columns = joblib.load(columns_path)
-        logger.info(f"✅ Enhanced model loaded successfully with {len(model_columns)} features")
+        # Configure joblib to handle numpy compatibility
+        import sklearn
+        sklearn.set_config(assume_finite=True)
+        
+        logger.info(f"Loading model with numpy {np.__version__}")
+        
+        # Load model with compatibility handling
+        try:
+            model = joblib.load(model_path)
+        except Exception as e:
+            # Try alternative loading method
+            logger.warning(f"Primary loading failed: {e}")
+            import pickle
+            with open(model_path, 'rb') as f:
+                model = pickle.load(f)
+        
+        try:
+            model_columns = joblib.load(columns_path)
+        except Exception as e:
+            logger.warning(f"Primary column loading failed: {e}")
+            import pickle
+            with open(columns_path, 'rb') as f:
+                model_columns = pickle.load(f)
+        
+        # Test the model
+        test_features = np.zeros(len(model_columns))
+        prediction = model.predict([test_features])
+        
+        logger.info(f"✅ Model loaded successfully with {len(model_columns)} features")
+        logger.info(f"✅ Test prediction: {prediction[0]:.2f}")
         return True
         
     except Exception as e:
