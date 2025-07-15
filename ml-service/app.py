@@ -174,16 +174,16 @@ def encode_enhanced_features(user_data, candidate_data):
         feature_dict = {}
         
         # Basic demographic features
-        feature_dict['age_difference'] = abs(user_data.get('age', 25) - candidate_data.get('Age', 25))
-        feature_dict['same_city'] = 1 if user_data.get('city') == candidate_data.get('City') else 0
-        feature_dict['same_locality'] = 1 if user_data.get('locality') == candidate_data.get('Locality') else 0
-        feature_dict['same_gender'] = 1 if user_data.get('gender') == candidate_data.get('Gender') else 0
+        feature_dict['age_difference'] = abs(user_data.get('age', 25) - candidate_data.get('age', 25))
+        feature_dict['same_city'] = 1 if user_data.get('city') == candidate_data.get('city') else 0
+        feature_dict['same_locality'] = 1 if user_data.get('locality') == candidate_data.get('locality') else 0
+        feature_dict['same_gender'] = 1 if user_data.get('gender') == candidate_data.get('gender') else 0
         
         # Budget compatibility
         budget_order = ['<15000', '15000-20000', '20000-25000', '25000-30000', '30000-40000', '40000+']
         try:
             user_budget_idx = budget_order.index(user_data.get('budget', '20000-25000'))
-            cand_budget_idx = budget_order.index(candidate_data.get('Budget', '20000-25000'))
+            cand_budget_idx = budget_order.index(candidate_data.get('budget', '20000-25000'))
             feature_dict['budget_difference'] = abs(user_budget_idx - cand_budget_idx)
             feature_dict['budget_compatibility'] = 1 if feature_dict['budget_difference'] <= 1 else 0
         except:
@@ -267,9 +267,28 @@ def predict_enhanced():
             # Encode features using enhanced feature engineering
             features = encode_enhanced_features(user_data, candidate_data)
             
-            # Get prediction
+            # Get prediction and convert to percentage
             prediction = model.predict(features)[0]
-            predictions.append(max(10, min(95, int(prediction))))
+            
+            # Count non-zero features for score boosting
+            non_zero_features = np.count_nonzero(features)
+            
+            # Convert to percentage (0.0-1.0 → 0-100)
+            percentage = prediction * 100
+            
+            # Boost score for high feature matches (more sophisticated compatibility)
+            if non_zero_features >= 18:  # Very high compatibility
+                percentage = min(95, percentage * 1.15)  # 15% boost
+            elif non_zero_features >= 15:  # High compatibility  
+                percentage = min(90, percentage * 1.10)  # 10% boost
+            elif non_zero_features >= 12:  # Good compatibility
+                percentage = min(85, percentage * 1.05)  # 5% boost
+            
+            # Clamp between reasonable bounds and round
+            final_score = max(10, min(95, round(percentage)))
+            predictions.append(final_score)
+            
+            logger.info(f"Raw: {prediction:.3f}, Features: {non_zero_features}, Final: {final_score}%")
         
         logger.info(f"✅ Generated {len(predictions)} enhanced predictions")
         return jsonify({"match_percentages": predictions})
