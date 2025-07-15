@@ -1,6 +1,5 @@
 import prisma from '../lib/prisma.js';
 
-// Generate a unique flat ID based on flat details
 function generateFlatId(flatData) {
   const { City, 'Sub region': subregion, BHK, Budget, Gender } = flatData;
   return `${City}-${subregion}-${BHK}-${Budget}-${Gender}`.replace(/\s+/g, '-').toLowerCase();
