@@ -17,3 +17,5 @@ services:
         value: INFO
       - key: PYTHONUNBUFFERED
         value: "1"
+      - key: NUMPY_EXPERIMENTAL_ARRAY_FUNCTION
+        value: "0"

@@ -1,6 +1,6 @@
 """
-Enhanced Flask API for New Optimized Flatmate Matching ML Model
-Uses the new model trained on optimized registration fields directly
+Homiee ML Service - Flatmate Compatibility Prediction
+Uses trained machine learning model for flatmate matching
 """
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -67,87 +67,7 @@ def load_enhanced_model():
         
     except Exception as e:
         logger.error(f"❌ Error loading enhanced model: {str(e)}")
-        return create_fallback_model()
-
-def create_fallback_model():
-    """Create a simple fallback model for the enhanced features"""
-    global model, model_columns
-    try:
-        logger.info("🔧 Creating enhanced fallback model...")
-        
-        class EnhancedFallbackModel:
-            def predict(self, X):
-                """Enhanced fallback prediction based on feature analysis"""
-                predictions = []
-                
-                for features in X:
-                    score = 50  # Base compatibility
-                    
-                    # Look for key compatibility indicators in feature names
-                    feature_dict = dict(zip(model_columns, features))
-                    
-                    # Location compatibility (very important)
-                    if feature_dict.get('same_city', 0) == 1:
-                        score += 15
-                    if feature_dict.get('same_locality', 0) == 1:
-                        score += 10
-                    
-                    # Budget compatibility
-                    if feature_dict.get('budget_compatibility', 0) == 1:
-                        score += 10
-                    
-                    # Lifestyle compatibility bonuses
-                    score += feature_dict.get('sleep_compatibility', 0) * 8
-                    score += feature_dict.get('dietary_compatibility', 0) * 8
-                    score += feature_dict.get('social_compatibility', 0) * 6
-                    score += feature_dict.get('cleanliness_compatibility', 0) * 8
-                    
-                    # Interest overlaps
-                    score += feature_dict.get('hobbies_overlap', 0) * 10
-                    score += feature_dict.get('interests_overlap', 0) * 8
-                    score += feature_dict.get('music_overlap', 0) * 5
-                    
-                    # Pet compatibility
-                    score += feature_dict.get('pet_ownership_compatibility', 0) * 6
-                    
-                    # Add some realistic variance
-                    import random
-                    score += random.uniform(-5, 5)
-                    
-                    # Ensure score is within bounds
-                    score = max(15, min(95, score))
-                    predictions.append(score)
-                
-                return np.array(predictions)
-        
-        # Create enhanced feature columns list
-        model_columns = [
-            # Basic compatibility features
-            'age_difference', 'same_city', 'same_locality', 'same_gender',
-            'budget_compatibility', 'budget_difference',
-            
-            # Lifestyle compatibility
-            'sleep_compatibility', 'dietary_compatibility', 'social_compatibility',
-            'hosting_compatibility', 'weekend_compatibility',
-            'cleanliness_difference', 'cleanliness_compatibility',
-            'smoking_compatibility', 'drinking_compatibility',
-            'personality_compatibility',
-            
-            # Interest overlaps
-            'hobbies_overlap', 'interests_overlap', 'music_overlap',
-            'sports_overlap', 'language_overlap',
-            
-            # Pet compatibility
-            'pet_ownership_compatibility'
-        ]
-        
-        model = EnhancedFallbackModel()
-        logger.info(f"✅ Enhanced fallback model created with {len(model_columns)} base features")
-        return True
-        
-    except Exception as e:
-        logger.error(f"❌ Enhanced fallback model creation failed: {str(e)}")
-        return False
+        raise RuntimeError(f"Model loading failed: {str(e)}")
 
 # Load model on import
 load_enhanced_model()
