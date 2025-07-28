@@ -27,7 +27,6 @@ export default function FlatFinder() {
 	const router = useRouter();
 	const { user, isAuthenticated } = useAuth();
 	
-	// State for filters
 	const [selectedCity, setSelectedCity] = useState("");
 	const [selectedSubregion, setSelectedSubregion] = useState("");
 	const [selectedGender, setSelectedGender] = useState("");
@@ -36,18 +35,18 @@ export default function FlatFinder() {
 	const [showResults, setShowResults] = useState(false);
 	const [expandedListing, setExpandedListing] = useState(null);
 	
-	// State for data
+
 	const [listings, setListings] = useState([]);
 	const [filteredListings, setFilteredListings] = useState([]);
 	const [cities, setCities] = useState({});
 	const [genderOptions, setGenderOptions] = useState([]);
 	const [budgetRanges, setBudgetRanges] = useState([]);
 	
-	// Loading states for better UX
+
 	const [isLoadingData, setIsLoadingData] = useState(true);
 	const [dataLoadError, setDataLoadError] = useState(null);
 	
-	// Cache to avoid repeated API calls
+
 	const [dataCache, setDataCache] = useState(null);
 	
 	// Saved flats state
@@ -112,7 +111,6 @@ export default function FlatFinder() {
 					budgetSet.add(listing.Budget.trim());
 				}
 			});
-			// Convert Maps to objects for state
 			const formattedCities = {};
 			cityMap.forEach((subregions, city) => {
 				formattedCities[city] = Array.from(subregions).sort();
@@ -209,7 +207,6 @@ export default function FlatFinder() {
 				});
 			}
 		}
-		// Simulate search delay (remove this in production)
 		await new Promise((resolve) => setTimeout(resolve, 300));
 		setFilteredListings(results);
 		setIsSearching(false);
@@ -399,7 +396,10 @@ export default function FlatFinder() {
 							</label>
 							<select
 								value={selectedCity}
-								onChange={(e) => setSelectedCity(e.target.value)}
+								onChange={(e) => {
+									setSelectedCity(e.target.value);
+									setSelectedSubregion("");
+								}}
 								disabled={isLoadingData}
 								className="w-full h-11 px-3 text-black border border-gray-200 rounded-lg focus:border-gray-400 focus:outline-none bg-white disabled:bg-gray-50 disabled:text-gray-400"
 							>
@@ -429,7 +429,14 @@ export default function FlatFinder() {
 								className="w-full h-11 px-3 text-black border border-gray-200 rounded-lg focus:border-gray-400 focus:outline-none bg-white disabled:bg-gray-50 disabled:text-gray-400"
 							>
 								<option value="">
-									{isLoadingData ? "Loading areas..." : "Select area"}
+									{isLoadingData 
+										? "Loading areas..." 
+										: !selectedCity 
+										? "Select city first" 
+										: cities[selectedCity]?.length === 0
+										? "No areas available"
+										: "Select area"
+									}
 								</option>
 								{selectedCity &&
 									cities[selectedCity]?.map((subregion) => (
