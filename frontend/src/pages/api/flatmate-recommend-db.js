@@ -6,7 +6,7 @@ export default async function handler(req, res) {
 		const userProfile = req.body;
 		console.log("📝 Proxying flatmate search to backend for:", userProfile.email);
 		// Forward request to backend database service
-		const backendUrl = process.env.BACKEND_URL || 'http://localhost:5000';
+		const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
 		const response = await fetch(`${backendUrl}/api/flatmates/matches`, {
 			method: 'POST',
 			headers: {
