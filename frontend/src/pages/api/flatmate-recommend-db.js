@@ -1,7 +1,4 @@
-/**
- * Flatmate Recommendation API - Database Powered
- * Proxies requests to the backend database service
- */
+
 export default async function handler(req, res) {
 	const startTime = Date.now();
 	if (req.method !== "POST") return res.status(405).end();
