@@ -2,7 +2,12 @@ import { useState, useEffect } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useAuth } from "../contexts/AuthContext";
-import { saveFlat, unsaveFlat, generateFlatId, checkFlatSaved } from "../lib/savedFlats";
+import {
+	saveFlat,
+	unsaveFlat,
+	generateFlatId,
+	checkFlatSaved,
+} from "../lib/savedFlats";
 import {
 	MapPin,
 	IndianRupee,
@@ -26,7 +31,7 @@ const FormFieldSkeleton = () => (
 export default function FlatFinder() {
 	const router = useRouter();
 	const { user, isAuthenticated } = useAuth();
-	
+
 	const [selectedCity, setSelectedCity] = useState("");
 	const [selectedSubregion, setSelectedSubregion] = useState("");
 	const [selectedGender, setSelectedGender] = useState("");
@@ -34,25 +39,23 @@ export default function FlatFinder() {
 	const [isSearching, setIsSearching] = useState(false);
 	const [showResults, setShowResults] = useState(false);
 	const [expandedListing, setExpandedListing] = useState(null);
-	
 
 	const [listings, setListings] = useState([]);
 	const [filteredListings, setFilteredListings] = useState([]);
 	const [cities, setCities] = useState({});
 	const [genderOptions, setGenderOptions] = useState([]);
 	const [budgetRanges, setBudgetRanges] = useState([]);
-	
 
 	const [isLoadingData, setIsLoadingData] = useState(true);
 	const [dataLoadError, setDataLoadError] = useState(null);
-	
 
 	const [dataCache, setDataCache] = useState(null);
-	
+
 	// Saved flats state
 	const [savedFlatsMap, setSavedFlatsMap] = useState(new Map());
 	const [savingFlat, setSavingFlat] = useState(null);
-	useEffect(() => {		const cachedData = localStorage.getItem("flats-form-data");
+	useEffect(() => {
+		const cachedData = localStorage.getItem("flats-form-data");
 		const cacheTimestamp = localStorage.getItem("flats-form-data-timestamp");
 		const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
 		if (
@@ -80,7 +83,8 @@ export default function FlatFinder() {
 			if (!response.ok) {
 				throw new Error(`API error: ${response.status}`);
 			}
-			const data = await response.json();			if (!Array.isArray(data)) {
+			const data = await response.json();
+			if (!Array.isArray(data)) {
 				throw new Error("Invalid data format received");
 			}
 			const filteredData = data.filter(
@@ -114,7 +118,8 @@ export default function FlatFinder() {
 			const formattedCities = {};
 			cityMap.forEach((subregions, city) => {
 				formattedCities[city] = Array.from(subregions).sort();
-			});			const ranges = [
+			});
+			const ranges = [
 				{
 					value: "0-15000",
 					label: "Under ₹15,000",
@@ -239,9 +244,9 @@ export default function FlatFinder() {
 
 	const checkSavedStatus = async () => {
 		if (!user || filteredListings.length === 0) return;
-		
+
 		const savedStatusMap = new Map();
-		
+
 		// Check saved status for all visible listings
 		for (const listing of filteredListings) {
 			const flatId = generateFlatId(listing);
@@ -252,41 +257,44 @@ export default function FlatFinder() {
 				savedStatusMap.set(flatId, false);
 			}
 		}
-		
+
 		setSavedFlatsMap(savedStatusMap);
 	};
 
 	const handleSaveFlat = async (listing) => {
 		if (!isAuthenticated || !user) {
-			router.push('/login');
+			router.push("/login");
 			return;
 		}
 
 		const flatId = generateFlatId(listing);
-		
+
 		// Prevent multiple simultaneous operations on the same flat
 		if (savingFlat === flatId) {
 			return;
 		}
-		
+
 		setSavingFlat(flatId);
 
 		try {
 			const isSaved = savedFlatsMap.get(flatId);
-			
+
 			if (isSaved) {
 				// Unsave the flat
 				await unsaveFlat(user.id, flatId);
-				setSavedFlatsMap(prev => new Map(prev.set(flatId, false)));
+				setSavedFlatsMap((prev) => new Map(prev.set(flatId, false)));
 			} else {
 				// Save the flat
 				try {
 					await saveFlat(user.id, listing);
-					setSavedFlatsMap(prev => new Map(prev.set(flatId, true)));
+					setSavedFlatsMap((prev) => new Map(prev.set(flatId, true)));
 				} catch (error) {
 					// If flat is already saved (race condition), just update the UI
-					if (error.status === 409 || (error.message && error.message.includes('already saved'))) {
-						setSavedFlatsMap(prev => new Map(prev.set(flatId, true)));
+					if (
+						error.status === 409 ||
+						(error.message && error.message.includes("already saved"))
+					) {
+						setSavedFlatsMap((prev) => new Map(prev.set(flatId, true)));
 					} else {
 						throw error; // Re-throw other errors
 					}
@@ -296,7 +304,7 @@ export default function FlatFinder() {
 			// Refresh the saved status to get the current state
 			try {
 				const currentStatus = await checkFlatSaved(user.id, flatId);
-				setSavedFlatsMap(prev => new Map(prev.set(flatId, currentStatus)));
+				setSavedFlatsMap((prev) => new Map(prev.set(flatId, currentStatus)));
 			} catch (checkError) {
 				// Silent error handling
 			}
@@ -429,14 +437,13 @@ export default function FlatFinder() {
 								className="w-full h-11 px-3 text-black border border-gray-200 rounded-lg focus:border-gray-400 focus:outline-none bg-white disabled:bg-gray-50 disabled:text-gray-400"
 							>
 								<option value="">
-									{isLoadingData 
-										? "Loading areas..." 
-										: !selectedCity 
-										? "Select city first" 
+									{isLoadingData
+										? "Loading areas..."
+										: !selectedCity
+										? "Select city first"
 										: cities[selectedCity]?.length === 0
 										? "No areas available"
-										: "Select area"
-									}
+										: "Select area"}
 								</option>
 								{selectedCity &&
 									cities[selectedCity]?.map((subregion) => (
@@ -554,103 +561,111 @@ export default function FlatFinder() {
 									const flatId = generateFlatId(listing);
 									const isSaved = savedFlatsMap.get(flatId) || false;
 									const isSaving = savingFlat === flatId;
-									
+
 									return (
-									<div
-										key={index}
-										className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow rounded-xl overflow-hidden"
-									>
-										<div className="p-4 sm:p-6">
-											<div className="flex flex-col sm:flex-row sm:items-start justify-between mb-3 sm:mb-4 gap-3 sm:gap-0">
-												<div className="flex-1">
-													<div className="flex items-center justify-between mb-2">
-														<h4 className="font-semibold text-gray-900 text-base sm:text-lg">
-															{listing.BHK} BHK in {listing["Sub region"]}
-														</h4>
-														{/* Save/Unsave Button */}
-														{isAuthenticated && (
-															<button
-																onClick={() => handleSaveFlat(listing)}
-																disabled={isSaving}
-																className={`p-2 rounded-full transition-all duration-200 ${
-																	isSaved 
-																		? 'text-red-500 hover:bg-red-50' 
-																		: 'text-gray-400 hover:text-red-500 hover:bg-red-50'
-																} ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
-																title={isSaved ? 'Remove from saved' : 'Save flat'}
-															>
-																{isSaving ? (
-																	<Loader2 className="w-5 h-5 animate-spin" />
-																) : isSaved ? (
-																	<Heart className="w-5 h-5 fill-current" />
-																) : (
-																	<Heart className="w-5 h-5" />
-																)}
-															</button>
-														)}
-													</div>
-													<div className="flex items-center text-gray-500 text-sm mb-2 sm:mb-3">
-														<MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
-														<span className="truncate">
-															{listing["Sub region"]}, {listing.City}
-														</span>
-													</div>
-													<div className="flex items-center text-lg sm:text-xl font-bold text-gray-900">
-														<IndianRupee className="w-4 h-4 sm:w-5 sm:h-5 mr-1" />
-														{listing.Budget}
-														<span className="text-xs sm:text-sm font-normal text-gray-500 ml-1">
-															/month
-														</span>
-													</div>
-												</div>
-												<div className="flex flex-row sm:flex-col items-start sm:items-end space-x-2 sm:space-x-0 sm:space-y-2">
-													<span className="px-2 sm:px-3 py-1 bg-blue-100 text-[#49548a] text-xs rounded-full whitespace-nowrap">
-														{listing.Gender} preferred
-													</span>
-													{listing["Flatmate Req"] && (
-														<span className="px-2 sm:px-3 py-1 bg-blue-100 text-[#49548a] text-xs rounded-full whitespace-nowrap">
-															{listing["Flatmate Req"]} flatmate
-															{parseInt(listing["Flatmate Req"]) > 1
-																? "s"
-																: ""}{" "}
-															needed
-														</span>
-													)}
-												</div>
-											</div>{" "}
-											<button
-												onClick={() => toggleListingDetails(index)}
-												className="w-full flex items-center justify-between p-2 sm:p-3 border border-gray-200 hover:bg-blue-50 rounded-lg transition-colors"
-											>
-												<span className="font-medium text-[#49548a] text-sm sm:text-base">
-													{expandedListing === index
-														? "Hide details"
-														: "View details"}
-												</span>
-												<ChevronRight
-													className={`w-4 h-4 text-[#49548a] transition-transform ${
-														expandedListing === index ? "rotate-90" : ""
-													}`}
-												/>
-											</button>
-											{expandedListing === index && (
-												<div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-blue-50 rounded-lg">
-													<p className="text-gray-700 text-sm leading-relaxed mb-3 sm:mb-4">
-														{listing.Message}
-													</p>
-													{extractContact(listing.Message) && (
-														<div className="flex items-center text-[#49548a] text-sm">
-															<Phone className="w-4 h-4 mr-2 flex-shrink-0" />
-															<span className="font-mono break-all">
-																{extractContact(listing.Message)}
+										<div
+											key={index}
+											className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow rounded-xl overflow-hidden"
+										>
+											<div className="p-4 sm:p-6">
+												<div className="flex flex-col sm:flex-row sm:items-start justify-between mb-3 sm:mb-4 gap-3 sm:gap-0">
+													<div className="flex-1">
+														<div className="flex items-center justify-between mb-2">
+															<h4 className="font-semibold text-gray-900 text-base sm:text-lg">
+																{listing.BHK} BHK in {listing["Sub region"]}
+															</h4>
+															{/* Save/Unsave Button */}
+															{isAuthenticated && (
+																<button
+																	onClick={() => handleSaveFlat(listing)}
+																	disabled={isSaving}
+																	className={`p-2 rounded-full transition-all duration-200 ${
+																		isSaved
+																			? "text-red-500 hover:bg-red-50"
+																			: "text-gray-400 hover:text-red-500 hover:bg-red-50"
+																	} ${
+																		isSaving
+																			? "opacity-50 cursor-not-allowed"
+																			: ""
+																	}`}
+																	title={
+																		isSaved ? "Remove from saved" : "Save flat"
+																	}
+																>
+																	{isSaving ? (
+																		<Loader2 className="w-5 h-5 animate-spin" />
+																	) : isSaved ? (
+																		<Heart className="w-5 h-5 fill-current" />
+																	) : (
+																		<Heart className="w-5 h-5" />
+																	)}
+																</button>
+															)}
+														</div>
+														<div className="flex items-center text-gray-500 text-sm mb-2 sm:mb-3">
+															<MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
+															<span className="truncate">
+																{listing["Sub region"]}, {listing.City}
 															</span>
 														</div>
-													)}
-												</div>
-											)}
+														<div className="flex items-center text-lg sm:text-xl font-bold text-gray-900">
+															<IndianRupee className="w-4 h-4 sm:w-5 sm:h-5 mr-1" />
+															{listing.Budget}
+															<span className="text-xs sm:text-sm font-normal text-gray-500 ml-1">
+																/month
+															</span>
+														</div>
+													</div>
+													<div className="flex flex-row sm:flex-col items-start sm:items-end space-x-2 sm:space-x-0 sm:space-y-2">
+														<span className="px-2 sm:px-3 py-1 bg-blue-100 text-[#49548a] text-xs rounded-full whitespace-nowrap">
+															{listing.Gender} preferred
+														</span>
+														{listing["Flatmate Req"] && (
+															<span className="px-2 sm:px-3 py-1 bg-blue-100 text-[#49548a] text-xs rounded-full whitespace-nowrap">
+																{listing["Flatmate Req"]} flatmate
+																{parseInt(listing["Flatmate Req"]) > 1
+																	? "s"
+																	: ""}{" "}
+																needed
+															</span>
+														)}
+													</div>
+												</div>{" "}
+												<button
+													onClick={() => toggleListingDetails(index)}
+													className="w-full flex items-center justify-between p-2 sm:p-3 border border-gray-200 hover:bg-blue-50 rounded-lg transition-colors"
+												>
+													<span className="font-medium text-[#49548a] text-sm sm:text-base">
+														{expandedListing === index
+															? "Hide details"
+															: "View details"}
+													</span>
+													<ChevronRight
+														className={`w-4 h-4 text-[#49548a] transition-transform ${
+															expandedListing === index ? "rotate-90" : ""
+														}`}
+													/>
+												</button>
+												{expandedListing === index && (
+													<div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-blue-50 rounded-lg">
+														<p className="text-gray-700 text-sm leading-relaxed mb-3 sm:mb-4">
+															{listing.Message}
+														</p>
+														{extractContact(listing.Message) && (
+															<div className="flex items-center text-[#49548a] text-sm">
+																<Phone className="w-4 h-4 mr-2 flex-shrink-0" />
+																<span className="font-mono break-all">
+																	{extractContact(listing.Message)}
+																</span>
+															</div>
+														)}
+													</div>
+												)}
+											</div>
 										</div>
-									</div>
-								)})})
+									);
+								})}
+								)
 							</div>
 						)}
 					</div>
