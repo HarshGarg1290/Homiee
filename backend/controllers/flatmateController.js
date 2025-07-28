@@ -4,6 +4,8 @@ import fetch from 'node-fetch';
 // ML Service Configuration
 const ML_SERVICE_URL = process.env.ML_SERVICE_URL || 'http://localhost:5001';
 
+console.log("🔧 ML Service URL configured:", ML_SERVICE_URL);
+
 // Budget compatibility function
 const budgetOrder = [
   "<15000",
@@ -75,17 +77,23 @@ async function getMLCompatibilityScores(userProfile, candidates) {
   }));
 
   // Call ML service
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+  
   const response = await fetch(`${ML_SERVICE_URL}/predict-enhanced`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(mlRequestData),
-    timeout: 30000 // 30 second timeout
+    signal: controller.signal
   });
 
+  clearTimeout(timeoutId);
+
   if (!response.ok) {
-    throw new Error(`ML service responded with status: ${response.status}`);
+    const errorText = await response.text();
+    throw new Error(`ML service responded with status: ${response.status} - ${errorText}`);
   }
 
   const result = await response.json();
@@ -186,10 +194,30 @@ export async function findFlatmateMatches(req, res) {
       compatibilityScores = await getMLCompatibilityScores(userProfile, filteredCandidates);
     } catch (error) {
       console.error("❌ ML service failed:", error.message);
+      console.error("❌ ML service error details:", error);
+      
+      // Check if it's a timeout error
+      if (error.name === 'AbortError') {
+        return res.status(503).json({
+          error: "ML service timeout",
+          message: "The recommendation service is taking too long to respond. Please try again.",
+          details: "Request timeout after 30 seconds"
+        });
+      }
+      
+      // Check if it's a network error
+      if (error.message.includes('fetch')) {
+        return res.status(503).json({
+          error: "ML service connection failed",
+          message: "Unable to connect to recommendation service. Please try again in a few moments.",
+          details: error.message
+        });
+      }
+      
       return res.status(503).json({
         error: "ML service temporarily unavailable",
         message: "Please try again in a few moments",
-        details: "Our recommendation engine is currently being updated"
+        details: error.message
       });
     }
     
