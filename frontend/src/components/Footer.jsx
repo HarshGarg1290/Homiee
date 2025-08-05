@@ -41,7 +41,7 @@ export default function Footer() {
 						viewport={{ once: true }}
 						className="text-[#9e7647] text-base font-normal leading-normal font-body"
 					>
-						© 2024 Homiee. All rights reserved.
+						© 2025 Homiee. All rights reserved.
 					</motion.p>
 				</footer>
 			</div>

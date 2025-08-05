@@ -29,7 +29,6 @@ export default function Landing() {
 				</div>
 			</div>
 			<Footer />
-			{/* Modals */}
 			<LoginModal />
 		</div>
 	);
