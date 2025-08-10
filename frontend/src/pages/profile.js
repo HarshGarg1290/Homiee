@@ -16,6 +16,7 @@ import {
   petPreferences, budgetRanges, sleepPatterns, hobbiesOptions,
   interestsOptions, musicGenres, sportsActivities, languages
 } from "../lib/data";
+import Image from "next/image";
 
 const formatDateForInput = (dateValue) => {
   if (!dateValue) return "";
@@ -216,10 +217,6 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-gray-50 font-['Montserrat',sans-serif]">
       <Head>
         <title>My Profile | Homiee</title>
-        <link
-          href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
       </Head>
 
       {/* Header */}
@@ -231,10 +228,12 @@ export default function ProfilePage() {
               className="flex items-center space-x-2 sm:space-x-3 hover:opacity-80 transition-opacity cursor-pointer"
             >
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-lg flex items-center justify-center">
-                <img
+                <Image
                   src="/logo.jpg"
                   alt="Homiee Logo"
-                  className="w-6 h-6 sm:w-8 sm:h-8"
+                  width={32}
+                  height={32}
+                  className="rounded-sm"
                 />
               </div>
               <h1 className="text-xl sm:text-2xl font-bold text-gray-900">

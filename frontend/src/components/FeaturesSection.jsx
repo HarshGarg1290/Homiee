@@ -34,7 +34,7 @@ export default function FeaturesSection() {
 					className="text-[#1c150d] text-base font-normal leading-normal max-w-[720px] font-body"
 				>
 					We understand that finding the right people to live with is more
-					important than just finding a place. That's why we've built a platform
+					important than just finding a place. That&apos;s why we&apos;ve built a platform
 					that prioritizes compatibility and community.
 				</motion.p>
 			</motion.div>

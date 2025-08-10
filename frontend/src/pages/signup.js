@@ -4,6 +4,8 @@ import { Eye, EyeOff, Mail, Lock, User, Phone } from "lucide-react";
 import { useRouter } from "next/router";
 import { useAuth } from "../contexts/AuthContext";
 import Link from "next/link";
+import Image from "next/image";
+
 export default function SignupPage() {
   const router = useRouter();
   const { register, isLoading } = useAuth();
@@ -82,13 +84,19 @@ export default function SignupPage() {
       >
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 text-2xl font-bold text-gray-800 mb-4">
-            <motion.img
-						transition={{ duration: 0.3 }}
-						onClick={() => {router.push('/')}}
-						src="/logo.jpg"
-						alt="Homiee Logo"
-						className="relative w-6 h-6 rounded-sm transition-all duration-300 cursor-pointer"
-					/>
+            <motion.div
+              transition={{ duration: 0.3 }}
+              onClick={() => {router.push('/')}}
+              className="cursor-pointer"
+            >
+              <Image
+                src="/logo.jpg"
+                alt="Homiee Logo"
+                width={24}
+                height={24}
+                className="rounded-sm transition-all duration-300"
+              />
+            </motion.div>
           </Link>
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Create Account</h1>
           <p className="text-gray-600">Join thousands finding their perfect flatmate</p>

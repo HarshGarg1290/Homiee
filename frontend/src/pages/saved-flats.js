@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useAuth } from "../contexts/AuthContext";
@@ -16,6 +16,7 @@ import {
   BookmarkX,
   ArrowLeft,
 } from "lucide-react";
+import Image from "next/image";
 
 export default function SavedFlats() {
   const router = useRouter();
@@ -39,20 +40,21 @@ export default function SavedFlats() {
     if (user && isAuthenticated) {
       fetchSavedFlats();
     }
-  }, [user, isAuthenticated]);
+  }, [user, isAuthenticated, fetchSavedFlats]);
 
-  const fetchSavedFlats = async () => {
+  const fetchSavedFlats = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       const data = await getSavedFlats(user.id);
       setSavedFlats(data.savedFlats || []);
     } catch (error) {
+      console.error('Error fetching saved flats:', error);
       setError('Failed to load saved flats. Please try again.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   const handleRemoveFlat = async (savedFlat) => {
     if (!user) return;
@@ -102,10 +104,6 @@ export default function SavedFlats() {
     <div className="min-h-screen bg-gray-50 font-['Montserrat',sans-serif]">
       <Head>
         <title>Saved Flats | Homiee</title>
-        <link
-          href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
       </Head>
 
       <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
@@ -116,10 +114,12 @@ export default function SavedFlats() {
               className="flex items-center space-x-2 sm:space-x-3 hover:opacity-80 transition-opacity cursor-pointer"
             >
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-lg flex items-center justify-center">
-                <img
+                <Image
                   src="/logo.jpg"
                   alt="Homiee Logo"
-                  className="w-6 h-6 sm:w-8 sm:h-8"
+                  width={32}
+                  height={32}
+                  className="rounded-sm"
                 />
               </div>
               <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
@@ -287,4 +287,10 @@ export default function SavedFlats() {
       </main>
     </div>
   );
+}
+
+export async function getServerSideProps() {
+	return {
+		props: {}
+	};
 }

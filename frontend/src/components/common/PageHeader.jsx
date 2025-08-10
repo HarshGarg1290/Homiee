@@ -1,4 +1,5 @@
 import { cn } from "../../lib/utils";
+import Image from "next/image";
 
 const PageHeader = ({ 
   title, 
@@ -21,7 +22,7 @@ const PageHeader = ({
           {logo && (
             <div className="flex items-center space-x-4">
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-lg flex items-center justify-center shadow-lg">
-                <img src="/logo.jpg" alt="Homiee" className="w-6 h-6 sm:w-8 sm:h-8" />
+                <Image src="/logo.jpg" alt="Homiee" width={32} height={32} className="sm:w-8 sm:h-8" />
               </div>
               <div className="flex flex-col">
                 <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{title}</h1>

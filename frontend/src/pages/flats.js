@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useAuth } from "../contexts/AuthContext";
@@ -21,6 +21,7 @@ import {
 	Heart,
 	HeartCrack,
 } from "lucide-react";
+import Image from "next/image";
 // Loading skeleton component for better UX
 const FormFieldSkeleton = () => (
 	<div className="space-y-2">
@@ -41,212 +42,205 @@ export default function FlatFinder() {
 	const [expandedListing, setExpandedListing] = useState(null);
 
 	const [listings, setListings] = useState([]);
-	const [filteredListings, setFilteredListings] = useState([]);
-	const [cities, setCities] = useState({});
-	const [genderOptions, setGenderOptions] = useState([]);
-	const [budgetRanges, setBudgetRanges] = useState([]);
+		const [filteredListings, setFilteredListings] = useState([]);
+		const [cities, setCities] = useState({});
+		const [genderOptions, setGenderOptions] = useState([]);
+		const [budgetRanges, setBudgetRanges] = useState([]);
 
-	const [isLoadingData, setIsLoadingData] = useState(true);
-	const [dataLoadError, setDataLoadError] = useState(null);
+		const [isLoadingData, setIsLoadingData] = useState(true);
+		const [dataLoadError, setDataLoadError] = useState(null);
 
-	const [dataCache, setDataCache] = useState(null);
+		const [dataCache, setDataCache] = useState(null);
 
-	// Saved flats state
-	const [savedFlatsMap, setSavedFlatsMap] = useState(new Map());
-	const [savingFlat, setSavingFlat] = useState(null);
-	useEffect(() => {
-		const cachedData = localStorage.getItem("flats-form-data");
-		const cacheTimestamp = localStorage.getItem("flats-form-data-timestamp");
-		const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
-		if (
-			cachedData &&
-			cacheTimestamp &&
-			Date.now() - parseInt(cacheTimestamp) < fiveMinutes
-		) {
-			// Use cached data
-			const parsed = JSON.parse(cachedData);
-			setCities(parsed.cities);
-			setGenderOptions(parsed.genderOptions);
-			setBudgetRanges(parsed.budgetRanges);
-			setListings(parsed.listings);
-			setIsLoadingData(false);
-			return;
-		}
-		// Fetch fresh data
-		fetchFormData();
-	}, []);
-	const fetchFormData = async () => {
-		try {
-			setIsLoadingData(true);
-			setDataLoadError(null);
-			const response = await fetch("/api/listings");
-			if (!response.ok) {
-				throw new Error(`API error: ${response.status}`);
+		// Saved flats state
+		const [savedFlatsMap, setSavedFlatsMap] = useState(new Map());
+		const [savingFlat, setSavingFlat] = useState(null);
+		useEffect(() => {
+			const cachedData = localStorage.getItem("flats-form-data");
+			const cacheTimestamp = localStorage.getItem("flats-form-data-timestamp");
+			const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
+			if (
+				cachedData &&
+				cacheTimestamp &&
+				Date.now() - parseInt(cacheTimestamp) < fiveMinutes
+			) {
+				// Use cached data
+				const parsed = JSON.parse(cachedData);
+				setCities(parsed.cities);
+				setGenderOptions(parsed.genderOptions);
+				setBudgetRanges(parsed.budgetRanges);
+				setListings(parsed.listings);
+				setIsLoadingData(false);
+				return;
 			}
-			const data = await response.json();
-			if (!Array.isArray(data)) {
-				throw new Error("Invalid data format received");
-			}
-			const filteredData = data.filter(
-				(listing) => listing.City && listing.Message
-			);
-			// Optimized data processing using Maps for better performance
-			const cityMap = new Map();
-			const genderSet = new Set();
-			const budgetSet = new Set();
-			filteredData.forEach((listing) => {
-				// Process cities and subregions more efficiently
-				if (listing.City?.trim()) {
-					const city = listing.City.trim();
-					const subregion = listing["Sub region"]?.trim() || "";
-					if (!cityMap.has(city)) {
-						cityMap.set(city, new Set());
+			// Fetch fresh data
+			fetchFormData();
+		}, []);
+		const fetchFormData = async () => {
+			try {
+				setIsLoadingData(true);
+				setDataLoadError(null);
+				const response = await fetch("/api/listings");
+				if (!response.ok) {
+					throw new Error(`API error: ${response.status}`);
+				}
+				const data = await response.json();
+				if (!Array.isArray(data)) {
+					throw new Error("Invalid data format received");
+				}
+				const filteredData = data.filter(
+					(listing) => listing.City && listing.Message
+				);
+				// Optimized data processing using Maps for better performance
+				const cityMap = new Map();
+				const genderSet = new Set();
+				const budgetSet = new Set();
+				filteredData.forEach((listing) => {
+					// Process cities and subregions more efficiently
+					if (listing.City?.trim()) {
+						const city = listing.City.trim();
+						const subregion = listing["Sub region"]?.trim() || "";
+						if (!cityMap.has(city)) {
+							cityMap.set(city, new Set());
+						}
+						if (subregion) {
+							cityMap.get(city).add(subregion);
+						}
 					}
-					if (subregion) {
-						cityMap.get(city).add(subregion);
+					// Process gender options
+					if (listing.Gender?.trim()) {
+						genderSet.add(listing.Gender.trim());
 					}
-				}
-				// Process gender options
-				if (listing.Gender?.trim()) {
-					genderSet.add(listing.Gender.trim());
-				}
-				// Process budget options
-				if (listing.Budget?.trim()) {
-					budgetSet.add(listing.Budget.trim());
-				}
-			});
-			const formattedCities = {};
-			cityMap.forEach((subregions, city) => {
-				formattedCities[city] = Array.from(subregions).sort();
-			});
-			const ranges = [
-				{
-					value: "0-15000",
-					label: "Under ₹15,000",
-					color: "bg-green-100 text-green-800",
-				},
-				{
-					value: "15000-25000",
-					label: "₹15,000 - ₹25,000",
-					color: "bg-blue-100 text-blue-800",
-				},
-				{
-					value: "25000-40000",
-					label: "₹25,000 - ₹40,000",
-					color: "bg-blue-100 text-blue-800",
-				},
-				{
-					value: "40000+",
-					label: "Above ₹40,000",
-					color: "bg-blue-100 text-blue-800",
-				},
-			];
-			// Set all data at once to minimize re-renders
-			const processedData = {
-				cities: formattedCities,
-				genderOptions: Array.from(genderSet).sort(),
-				budgetRanges: ranges,
-				listings: filteredData,
-			};
-			setCities(processedData.cities);
-			setGenderOptions(processedData.genderOptions);
-			setBudgetRanges(processedData.budgetRanges);
-			setListings(processedData.listings);
-			// Cache the processed data
-			localStorage.setItem("flats-form-data", JSON.stringify(processedData));
-			localStorage.setItem("flats-form-data-timestamp", Date.now().toString());
-		} catch (error) {
-			setDataLoadError(error.message);
-		} finally {
-			setIsLoadingData(false);
-		}
-	};
-	const clearAllFilters = () => {
-		setSelectedCity("");
-		setSelectedSubregion("");
-		setSelectedGender("");
-		setSelectedBudget("");
-		setShowResults(false);
-	};
-	const handleSearch = async () => {
-		setIsSearching(true);
-		let results = [...listings];
-		if (selectedCity) {
-			results = results.filter(
-				(listing) =>
-					listing.City &&
-					listing.City.trim().toLowerCase() === selectedCity.toLowerCase()
-			);
-		}
-		if (selectedSubregion) {
-			results = results.filter(
-				(listing) =>
-					listing["Sub region"] &&
-					listing["Sub region"].trim().toLowerCase() ===
-						selectedSubregion.toLowerCase()
-			);
-		}
-		if (selectedGender) {
-			results = results.filter(
-				(listing) =>
-					listing.Gender &&
-					(listing.Gender.trim().toLowerCase() ===
-						selectedGender.toLowerCase() ||
-						listing.Gender.trim().toLowerCase() === "both")
-			);
-		}
-		if (selectedBudget) {
-			const [min, max] = selectedBudget.split("-");
-			if (max) {
-				results = results.filter((listing) => {
-					const budget = parseInt(listing.Budget);
-					return (
-						!isNaN(budget) && budget >= parseInt(min) && budget <= parseInt(max)
-					);
+					// Process budget options
+					if (listing.Budget?.trim()) {
+						budgetSet.add(listing.Budget.trim());
+					}
 				});
-			} else {
-				const minValue = parseInt(min);
-				results = results.filter((listing) => {
-					const budget = parseInt(listing.Budget);
-					return !isNaN(budget) && budget >= minValue;
+				const formattedCities = {};
+				cityMap.forEach((subregions, city) => {
+					formattedCities[city] = Array.from(subregions).sort();
 				});
+				const ranges = [
+					{
+						value: "0-15000",
+						label: "Under ₹15,000",
+						color: "bg-green-100 text-green-800",
+					},
+					{
+						value: "15000-25000",
+						label: "₹15,000 - ₹25,000",
+						color: "bg-blue-100 text-blue-800",
+					},
+					{
+						value: "25000-40000",
+						label: "₹25,000 - ₹40,000",
+						color: "bg-blue-100 text-blue-800",
+					},
+					{
+						value: "40000+",
+						label: "Above ₹40,000",
+						color: "bg-blue-100 text-blue-800",
+					},
+				];
+				// Set all data at once to minimize re-renders
+				const processedData = {
+					cities: formattedCities,
+					genderOptions: Array.from(genderSet).sort(),
+					budgetRanges: ranges,
+					listings: filteredData,
+				};
+				setCities(processedData.cities);
+				setGenderOptions(processedData.genderOptions);
+				setBudgetRanges(processedData.budgetRanges);
+				setListings(processedData.listings);
+				// Cache the processed data
+				localStorage.setItem("flats-form-data", JSON.stringify(processedData));
+				localStorage.setItem("flats-form-data-timestamp", Date.now().toString());
+			} catch (error) {
+				setDataLoadError(error.message);
+			} finally {
+				setIsLoadingData(false);
 			}
-		}
-		await new Promise((resolve) => setTimeout(resolve, 300));
-		setFilteredListings(results);
-		setIsSearching(false);
-		setShowResults(true);
-	};
-	const toggleListingDetails = (id) => {
-		setExpandedListing(expandedListing === id ? null : id);
-	};
-	const extractContact = (message) => {
-		const phoneRegex = /(\d{10})|(\+\d{12})/g;
-		const matches = message.match(phoneRegex);
-		return matches ? matches[0] : null;
-	};
-	const hasActiveFilters =
-		selectedCity || selectedSubregion || selectedGender || selectedBudget;
+		};
+		const clearAllFilters = () => {
+			setSelectedCity("");
+			setSelectedSubregion("");
+			setSelectedGender("");
+			setSelectedBudget("");
+			setShowResults(false);
+		};
+		const handleSearch = async () => {
+			setIsSearching(true);
+			let results = [...listings];
+			if (selectedCity) {
+				results = results.filter(
+					(listing) =>
+						listing.City &&
+						listing.City.trim().toLowerCase() === selectedCity.toLowerCase()
+				);
+			}
+			if (selectedSubregion) {
+				results = results.filter(
+					(listing) =>
+						listing["Sub region"] &&
+						listing["Sub region"].trim().toLowerCase() ===
+							selectedSubregion.toLowerCase()
+				);
+			}
+			if (selectedGender) {
+				results = results.filter(
+					(listing) =>
+						listing.Gender &&
+						(listing.Gender.trim().toLowerCase() ===
+							selectedGender.toLowerCase() ||
+							listing.Gender.trim().toLowerCase() === "both")
+				);
+			}
+			if (selectedBudget) {
+				const [min, max] = selectedBudget.split("-");
+				if (max) {
+					results = results.filter((listing) => {
+						const budget = parseInt(listing.Budget);
+						return (
+							!isNaN(budget) && budget >= parseInt(min) && budget <= parseInt(max)
+						);
+					});
+				} else {
+					const minValue = parseInt(min);
+					results = results.filter((listing) => {
+						const budget = parseInt(listing.Budget);
+						return !isNaN(budget) && budget >= minValue;
+					});
+				}
+			}
+			await new Promise((resolve) => setTimeout(resolve, 300));
+			setFilteredListings(results);
+			setIsSearching(false);
+			setShowResults(true);
+		};
+		const toggleListingDetails = (id) => {
+			setExpandedListing(expandedListing === id ? null : id);
+		};
+		const extractContact = (message) => {
+			const phoneRegex = /(\d{10})|(\+\d{12})/g;
+			const matches = message.match(phoneRegex);
+			return matches ? matches[0] : null;
+		};
+		const hasActiveFilters =
+			selectedCity || selectedSubregion || selectedGender || selectedBudget;
 
-	// Check saved status for listings when user is authenticated
-	useEffect(() => {
-		if (isAuthenticated && user && showResults && filteredListings.length > 0) {
-			checkSavedStatus();
-		}
-	}, [isAuthenticated, user, showResults, filteredListings]);
+		// Check saved status for listings when user is authenticated
+		useEffect(() => {
+			if (isAuthenticated && user && showResults && filteredListings.length > 0) {
+				checkSavedStatus();
+			}
+		}, [isAuthenticated, user, showResults, filteredListings, checkSavedStatus]);
 
-	// Also check saved status when component mounts and user is already authenticated
-	useEffect(() => {
-		if (isAuthenticated && user && filteredListings.length > 0) {
-			checkSavedStatus();
-		}
-	}, [isAuthenticated, user, filteredListings]);
-
-	const checkSavedStatus = async () => {
+		// Also check saved status when component mounts and user is already authenticated
+	const checkSavedStatus = useCallback(async () => {
 		if (!user || filteredListings.length === 0) return;
 
 		const savedStatusMap = new Map();
-
 		// Check saved status for all visible listings
 		for (const listing of filteredListings) {
 			const flatId = generateFlatId(listing);
@@ -259,75 +253,71 @@ export default function FlatFinder() {
 		}
 
 		setSavedFlatsMap(savedStatusMap);
-	};
+	}, [user, filteredListings]);
 
+		useEffect(() => {
+			if (isAuthenticated && user && filteredListings.length > 0) {
+				checkSavedStatus();
+			}
+		}, [isAuthenticated, user, filteredListings, checkSavedStatus]);
+	
 	const handleSaveFlat = async (listing) => {
-		if (!isAuthenticated || !user) {
-			router.push("/login");
-			return;
-		}
+			if (!isAuthenticated || !user) {
+				router.push("/login");
+				return;
+			}
 
-		const flatId = generateFlatId(listing);
+			const flatId = generateFlatId(listing);
 
-		// Prevent multiple simultaneous operations on the same flat
-		if (savingFlat === flatId) {
-			return;
-		}
+			// Prevent multiple simultaneous operations on the same flat
+			if (savingFlat === flatId) {
+				return;
+			}
 
-		setSavingFlat(flatId);
+			setSavingFlat(flatId);
 
-		try {
-			const isSaved = savedFlatsMap.get(flatId);
+			try {
+				const isSaved = savedFlatsMap.get(flatId);
 
-			if (isSaved) {
-				// Unsave the flat
-				await unsaveFlat(user.id, flatId);
-				setSavedFlatsMap((prev) => new Map(prev.set(flatId, false)));
-			} else {
-				// Save the flat
-				try {
-					await saveFlat(user.id, listing);
-					setSavedFlatsMap((prev) => new Map(prev.set(flatId, true)));
-				} catch (error) {
-					// If flat is already saved (race condition), just update the UI
-					if (
-						error.status === 409 ||
-						(error.message && error.message.includes("already saved"))
-					) {
+				if (isSaved) {
+					// Unsave the flat
+					await unsaveFlat(user.id, flatId);
+					setSavedFlatsMap((prev) => new Map(prev.set(flatId, false)));
+				} else {
+					// Save the flat
+					try {
+						await saveFlat(user.id, listing);
 						setSavedFlatsMap((prev) => new Map(prev.set(flatId, true)));
-					} else {
-						throw error; // Re-throw other errors
+					} catch (error) {
+						// If flat is already saved (race condition), just update the UI
+						if (
+							error.status === 409 ||
+							(error.message && error.message.includes("already saved"))
+						) {
+							setSavedFlatsMap((prev) => new Map(prev.set(flatId, true)));
+						} else {
+							throw error; // Re-throw other errors
+						}
 					}
 				}
+			} catch (error) {
+				// Refresh the saved status to get the current state
+				try {
+					const currentStatus = await checkFlatSaved(user.id, flatId);
+					setSavedFlatsMap((prev) => new Map(prev.set(flatId, currentStatus)));
+				} catch (checkError) {
+					// Silent error handling
+				}
+			} finally {
+				setSavingFlat(null);
 			}
-		} catch (error) {
-			// Refresh the saved status to get the current state
-			try {
-				const currentStatus = await checkFlatSaved(user.id, flatId);
-				setSavedFlatsMap((prev) => new Map(prev.set(flatId, currentStatus)));
-			} catch (checkError) {
-				// Silent error handling
-			}
-		} finally {
-			setSavingFlat(null);
-		}
-	};
+		};
 	return (
 		<div className="min-h-screen bg-gray-50 font-['Montserrat',sans-serif]">
 			<Head>
 				<title>Homiee - Find your perfect home</title>
-				<link
-					href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap"
-					rel="stylesheet"
-				/>
-				<style jsx global>{`
-					html,
-					body {
-						font-family: "Montserrat", sans-serif;
-					}
-				`}</style>
-			</Head>{" "}
-			{/* Minimal Header */}{" "}
+			</Head>
+			{" "}
 			<header className="bg-white border-b border-gray-100 sticky top-0 z-50">
 				<div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
 					<div className="flex items-center justify-between">
@@ -336,10 +326,12 @@ export default function FlatFinder() {
 							className="flex items-center space-x-2 sm:space-x-3 hover:opacity-80 transition-opacity cursor-pointer"
 						>
 							<div className="w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-lg flex items-center justify-center">
-								<img
+								<Image
 									src="/logo.jpg"
 									alt="Homiee Logo"
-									className="w-6 h-6 sm:w-8 sm:h-8"
+									width={32}
+									height={32}
+									className="rounded-sm"
 								/>
 							</div>
 							<h1 className="text-xl sm:text-2xl font-bold text-gray-900">
@@ -673,4 +665,10 @@ export default function FlatFinder() {
 			</main>
 		</div>
 	);
+}
+
+export async function getServerSideProps() {
+	return {
+		props: {}
+	};
 }

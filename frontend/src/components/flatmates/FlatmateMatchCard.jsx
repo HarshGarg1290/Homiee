@@ -1,4 +1,5 @@
 import { Card } from '../common';
+import Image from "next/image";
 
 const FlatmateMatchCard = ({ candidate, match_percentage, index }) => {
   const getMatchColor = (percentage) => {
@@ -13,13 +14,12 @@ const FlatmateMatchCard = ({ candidate, match_percentage, index }) => {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-3 sm:space-x-4">
           <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden border-3 border-white shadow-lg flex-shrink-0">
-            <img
-              src={candidate.ProfilePhoto}
+            <Image
+              src={candidate.ProfilePhoto || `https://ui-avatars.com/api/?name=${candidate.Name}&background=49548a&color=fff&size=80`}
               alt={`${candidate.Name}'s profile`}
+              width={80}
+              height={80}
               className="w-full h-full object-cover"
-              onError={(e) => {
-                e.target.src = `https://ui-avatars.com/api/?name=${candidate.Name}&background=49548a&color=fff&size=80`;
-              }}
             />
           </div>
           <div>

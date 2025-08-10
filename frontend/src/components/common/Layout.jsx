@@ -1,5 +1,6 @@
 import PageHeader from "./PageHeader";
 import { cn } from "../../lib/utils";
+import Image from "next/image";
 
 const Layout = ({ 
   children,
@@ -34,7 +35,7 @@ export const AuthLayout = ({ children, title, subtitle }) => (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <img src="/logo.jpg" alt="Homiee" className="w-16 h-16 mx-auto mb-4 rounded-xl shadow-lg" />
+          <Image src="/logo.jpg" alt="Homiee" width={64} height={64} className="mx-auto mb-4 rounded-xl shadow-lg" />
           <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
           {subtitle && <p className="text-gray-600 mt-2">{subtitle}</p>}
         </div>

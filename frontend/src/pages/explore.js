@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/router";
 import Head from "next/head";
@@ -39,9 +39,9 @@ export default function ExplorePage() {
     if (isAuthenticated && token && user) {
       loadRecommendations();
     }
-  }, [isAuthenticated, token, user]);
+  }, [isAuthenticated, token, user, loadRecommendations]);
 
-  const loadRecommendations = async () => {
+  const loadRecommendations = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
@@ -52,7 +52,7 @@ export default function ExplorePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -125,10 +125,6 @@ export default function ExplorePage() {
     <div className="min-h-screen bg-gray-50 font-['Montserrat',sans-serif]">
       <Head>
         <title>Explore Your Neighbourhood | Homiee</title>
-        <link
-          href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
       </Head>
 
       <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
@@ -240,7 +236,7 @@ export default function ExplorePage() {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-gray-900">
-                  Search Results for "{searchResults.query}"
+                  Search Results for &quot;{searchResults.query}&quot;
                 </h2>
                 <span className="text-sm text-gray-500">
                   {searchResults.total} result{searchResults.total !== 1 ? 's' : ''}

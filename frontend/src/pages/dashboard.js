@@ -175,7 +175,7 @@ export default function Dashboard() {
               <h3 className="text-xl font-semibold text-gray-800">Saved Flats</h3>
             </div>
             <p className="text-gray-600 mb-4">
-              View all the flats you've saved while browsing. Keep track of your favorite options in one place.
+              View all the flats you&apos;ve saved while browsing. Keep track of your favorite options in one place.
             </p>
             <div className="text-[#f38406] font-medium group-hover:translate-x-2 transition-transform inline-flex items-center gap-2">
               View Saved →

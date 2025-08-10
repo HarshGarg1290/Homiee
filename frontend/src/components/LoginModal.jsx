@@ -173,7 +173,7 @@ export default function LoginModal() {
 
         {/* Sign Up Link */}
         <div className="text-center text-xs text-gray-600">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <button
             type="button"
             onClick={() => {

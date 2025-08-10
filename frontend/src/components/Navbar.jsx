@@ -4,6 +4,7 @@ import { useModal } from "../contexts/ModalContext";
 import { useAuth } from "../contexts/AuthContext";
 import { ChevronDown, User, Settings, LogOut } from "lucide-react";
 import { useState } from "react";
+import Image from "next/image";
 
 export default function Navbar({ scrollToSection, showHowItWorks = true, showDashboardInDropdown = true }) {
 	const router = useRouter();
@@ -32,13 +33,19 @@ export default function Navbar({ scrollToSection, showHowItWorks = true, showDas
 			>
 				<div className="relative group">
 					<div className="absolute inset-0 bg-gradient-to-r from-[#f38406]/20 to-[#e07405]/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-					<motion.img
+					<motion.div
 						transition={{ duration: 0.3 }}
 						onClick={() => {router.push('/')}}
-						src="/logo.jpg"
-						alt="Homiee Logo"
-						className="relative w-8 h-8 rounded-md transition-all duration-300 cursor-pointer"
-					/>
+						className="cursor-pointer"
+					>
+						<Image
+							src="/logo.jpg"
+							alt="Homiee Logo"
+							width={24}
+							height={24}
+							className="rounded-sm transition-all duration-300"
+						/>
+					</motion.div>
 				</div>
 				<motion.h2
 					initial={{ opacity: 0, x: -10 }}

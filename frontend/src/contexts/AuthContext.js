@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 const AuthContext = createContext();
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -14,29 +14,21 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   // API base URL
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+  
   // Initialize auth state from localStorage on mount
   useEffect(() => {
     initializeAuth();
   }, []);
-  const initializeAuth = async () => {
-    try {
-      const storedToken = localStorage.getItem('authToken');
-      const storedUser = localStorage.getItem('authUser');
-      if (storedToken && storedUser) {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-        setIsAuthenticated(true);
-        // Verify token is still valid
-        await verifyToken(storedToken);
-      }
-    } catch (error) {
-      console.error('Auth initialization error:', error);
-      logout();
-    } finally {
-      setIsLoading(false);
-    }
+
+  const logout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('authUser');
+    setToken(null);
+    setUser(null);
+    setIsAuthenticated(false);
   };
-  const verifyToken = async (authToken) => {
+
+  const verifyToken = useCallback(async (authToken) => {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/profile`, {
         headers: {
@@ -58,7 +50,27 @@ export const AuthProvider = ({ children }) => {
       console.error('Token verification error:', error);
       logout();
     }
-  };
+  }, []);
+
+  const initializeAuth = useCallback(async () => {
+    try {
+      const storedToken = localStorage.getItem('authToken');
+      const storedUser = localStorage.getItem('authUser');
+      if (storedToken && storedUser) {
+        setToken(storedToken);
+        setUser(JSON.parse(storedUser));
+        setIsAuthenticated(true);
+        // Verify token is still valid
+        await verifyToken(storedToken);
+      }
+    } catch (error) {
+      console.error('Auth initialization error:', error);
+      logout();
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   const login = async (email, password) => {
     try {
       setIsLoading(true);
@@ -155,13 +167,7 @@ export const AuthProvider = ({ children }) => {
       setIsLoading(false);
     }
   };
-  const logout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('authUser');
-    setToken(null);
-    setUser(null);
-    setIsAuthenticated(false);
-  };
+
   const getProfile = async () => {
     try {
       if (!token) return { success: false, message: 'No authentication token' };

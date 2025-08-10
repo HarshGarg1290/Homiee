@@ -5,6 +5,8 @@ import { useRouter } from "next/router";
 import { useAuth } from "../contexts/AuthContext";
 import { validateEssentialProfile } from "../lib/validation";
 import Link from "next/link";
+import Image from "next/image";
+
 export default function LoginPage() {
   const router = useRouter();
   const { login, isLoading } = useAuth();
@@ -75,13 +77,19 @@ export default function LoginPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 text-2xl font-bold text-gray-800 mb-4">
-            <motion.img
-						transition={{ duration: 0.3 }}
-						onClick={() => {router.push('/')}}
-						src="/logo.jpg"
-						alt="Homiee Logo"
-						className="relative w-8 h-8 rounded-sm transition-all duration-300 cursor-pointer"
-					/>
+            <motion.div
+              transition={{ duration: 0.3 }}
+              onClick={() => {router.push('/')}}
+              className="cursor-pointer"
+            >
+              <Image
+                src="/logo.jpg"
+                alt="Homiee Logo"
+                width={24}
+                height={24}
+                className="rounded-sm transition-all duration-300"
+              />
+            </motion.div>
           </Link>
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h1>
           <p className="text-gray-600">Sign in to your account</p>
@@ -172,7 +180,7 @@ export default function LoginPage() {
           </div>
           {/* Signup Link */}
           <div className="text-center mt-6 text-sm text-gray-600">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link href="/signup" className="text-[#f38406] hover:text-[#e07405] font-medium transition-colors">
               Create one
             </Link>
