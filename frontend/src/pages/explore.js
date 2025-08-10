@@ -35,12 +35,6 @@ export default function ExplorePage() {
     }
   }, [isAuthenticated, authLoading, router]);
 
-  useEffect(() => {
-    if (isAuthenticated && token && user) {
-      loadRecommendations();
-    }
-  }, [isAuthenticated, token, user, loadRecommendations]);
-
   const loadRecommendations = useCallback(async () => {
     try {
       setLoading(true);
@@ -53,6 +47,12 @@ export default function ExplorePage() {
       setLoading(false);
     }
   }, [token]);
+
+  useEffect(() => {
+    if (isAuthenticated && token && user) {
+      loadRecommendations();
+    }
+  }, [isAuthenticated, token, user, loadRecommendations]);
 
   const handleSearch = async (e) => {
     e.preventDefault();
