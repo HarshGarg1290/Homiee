@@ -1,7 +1,3 @@
-/**
- * Reusable Layout Component
- * Provides consistent page layout with optional header and footer
- */
 import PageHeader from "./PageHeader";
 import { cn } from "../../lib/utils";
 
@@ -22,13 +18,10 @@ const Layout = ({
 
   return (
     <div className={cn("min-h-screen", backgrounds[background])}>
-      {/* Custom Header */}
       {header}
       
-      {/* Default Header */}
       {showDefaultHeader && <PageHeader {...headerProps} />}
       
-      {/* Main Content */}
       <main className={cn("", className)}>
         {children}
       </main>
@@ -36,7 +29,6 @@ const Layout = ({
   );
 };
 
-// Specialized layout variants
 export const AuthLayout = ({ children, title, subtitle }) => (
   <Layout background="gradient">
     <div className="min-h-screen flex items-center justify-center p-4">

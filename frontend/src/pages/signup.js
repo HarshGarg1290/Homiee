@@ -80,7 +80,6 @@ export default function SignupPage() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md"
       >
-        {/* Header */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 text-2xl font-bold text-gray-800 mb-4">
             <motion.img
@@ -94,7 +93,6 @@ export default function SignupPage() {
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Create Account</h1>
           <p className="text-gray-600">Join thousands finding their perfect flatmate</p>
         </div>
-        {/* Error Message */}
         {error && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
@@ -104,7 +102,6 @@ export default function SignupPage() {
             {error}
           </motion.div>
         )}
-        {/* Form */}
         <motion.form
           onSubmit={handleSubmit}
           className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100"
@@ -112,7 +109,6 @@ export default function SignupPage() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
-          {/* Name Fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
@@ -149,7 +145,6 @@ export default function SignupPage() {
               {fieldErrors.lastName && <p className="text-red-500 text-xs mt-1">{fieldErrors.lastName}</p>}
             </div>
           </div>
-          {/* Email */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
             <div className="relative">
@@ -167,7 +162,6 @@ export default function SignupPage() {
             </div>
             {fieldErrors.email && <p className="text-red-500 text-xs mt-1">{fieldErrors.email}</p>}
           </div>
-          {/* Phone (Optional) */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Phone Number <span className="text-gray-400 text-xs">(Optional)</span>
@@ -184,7 +178,6 @@ export default function SignupPage() {
               />
             </div>
           </div>
-          {/* Password Fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
@@ -235,7 +228,6 @@ export default function SignupPage() {
               {fieldErrors.confirmPassword && <p className="text-red-500 text-xs mt-1">{fieldErrors.confirmPassword}</p>}
             </div>
           </div>
-          {/* Submit Button */}
           <motion.button
             type="submit"
             disabled={isLoading}
@@ -252,7 +244,6 @@ export default function SignupPage() {
               "Create Account & Continue"
             )}
           </motion.button>
-          {/* Login Link */}
           <div className="text-center mt-6 text-sm text-gray-600">
             Already have an account?{" "}
             <Link href="/login" className="text-[#f38406] hover:text-[#e07405] font-medium transition-colors">
@@ -260,7 +251,6 @@ export default function SignupPage() {
             </Link>
           </div>
         </motion.form>
-        {/* Footer */}
         <div className="text-center mt-8 text-xs text-gray-500">
           By creating an account, you agree to our{" "}
           <Link href="/terms" className="text-[#f38406] hover:underline">Terms of Service</Link>

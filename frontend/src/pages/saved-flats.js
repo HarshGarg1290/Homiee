@@ -108,7 +108,6 @@ export default function SavedFlats() {
         />
       </Head>
 
-      {/* Header */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center justify-between">
@@ -139,7 +138,6 @@ export default function SavedFlats() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        {/* Hero Section */}
         <div className="text-center mb-8 sm:mb-12">
           <div className="flex items-center justify-center mb-4">
             <div className="w-16 h-16 bg-gradient-to-r from-[#f38406] to-[#e07405] rounded-lg flex items-center justify-center">
@@ -157,7 +155,6 @@ export default function SavedFlats() {
           </p>
         </div>
 
-        {/* Loading State */}
         {loading && (
           <div className="text-center py-16">
             <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[#f38406]" />
@@ -165,7 +162,6 @@ export default function SavedFlats() {
           </div>
         )}
 
-        {/* Error State */}
         {error && (
           <div className="text-center py-16">
             <div className="bg-red-50 border border-red-200 rounded-xl p-6 max-w-md mx-auto">
@@ -180,7 +176,6 @@ export default function SavedFlats() {
           </div>
         )}
 
-        {/* Empty State */}
         {!loading && !error && savedFlats.length === 0 && (
           <div className="text-center py-16">
             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -199,7 +194,6 @@ export default function SavedFlats() {
           </div>
         )}
 
-        {/* Saved Flats List */}
         {!loading && !error && savedFlats.length > 0 && (
           <div className="space-y-4 sm:space-y-6">
             {savedFlats.map((savedFlat) => (
@@ -214,7 +208,6 @@ export default function SavedFlats() {
                         <h4 className="font-semibold text-gray-900 text-base sm:text-lg">
                           {savedFlat.bhk} BHK in {savedFlat.subregion}
                         </h4>
-                        {/* Remove Button */}
                         <button
                           onClick={() => handleRemoveFlat(savedFlat)}
                           disabled={removingFlat === savedFlat.id}

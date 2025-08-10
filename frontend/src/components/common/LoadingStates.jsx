@@ -1,9 +1,5 @@
-/**
- * Reusable Loading and State Components
- */
 import { cn } from "../../lib/utils";
 
-// Loading Spinner
 export const LoadingSpinner = ({ size = "md", className = "" }) => {
   const sizes = {
     sm: "w-4 h-4",

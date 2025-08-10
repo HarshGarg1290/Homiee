@@ -1,7 +1,3 @@
-/**
- * Flatmate Match Card Component
- * Displays individual flatmate match with all details
- */
 import { Card } from '../common';
 
 const FlatmateMatchCard = ({ candidate, match_percentage, index }) => {
@@ -14,7 +10,6 @@ const FlatmateMatchCard = ({ candidate, match_percentage, index }) => {
 
   return (
     <Card variant="glass" className="hover:shadow-xl transition-all duration-300 border border-blue-100">
-      {/* Header with profile photo, name, and match percentage */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-3 sm:space-x-4">
           <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden border-3 border-white shadow-lg flex-shrink-0">
@@ -44,7 +39,6 @@ const FlatmateMatchCard = ({ candidate, match_percentage, index }) => {
         </div>
       </div>
 
-      {/* Location and Budget */}
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div className="bg-white/70 rounded-lg p-3">
           <div className="text-xs text-gray-500 uppercase tracking-wide">Location</div>

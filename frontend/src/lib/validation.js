@@ -1,6 +1,3 @@
-/**
- * Profile validation utility for enhanced matching system
- */
 export const CORE_PROFILE_FIELDS = [
   'city',
   'locality',
@@ -34,11 +31,6 @@ export const OPTIONAL_PROFILE_FIELDS = [
   'profession',
   'age'
 ];
-/**
- * Validate if user has completed core profile fields
- * @param {Object} userProfile - User profile object
- * @returns {Object} - Validation result with isValid and missingFields
- */
 export function validateCoreProfile(userProfile) {
   if (!userProfile) {
     return {

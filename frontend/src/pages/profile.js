@@ -17,7 +17,6 @@ import {
   interestsOptions, musicGenres, sportsActivities, languages
 } from "../lib/data";
 
-// Utility function to safely format date for input field
 const formatDateForInput = (dateValue) => {
   if (!dateValue) return "";
   try {
@@ -67,14 +66,12 @@ export default function ProfilePage() {
     languagesSpoken: []
   });
 
-  // Redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/login');
     }
   }, [user, authLoading, router]);
 
-  // Load user data when available
   useEffect(() => {
     if (user) {
       setFormData({

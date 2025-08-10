@@ -1,7 +1,3 @@
-/**
- * Reusable Header Component
- * Provides consistent header styling across pages
- */
 import { cn } from "../../lib/utils";
 
 const PageHeader = ({ 
@@ -22,7 +18,6 @@ const PageHeader = ({
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20">
           
-          {/* Logo Section */}
           {logo && (
             <div className="flex items-center space-x-4">
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-lg flex items-center justify-center shadow-lg">
@@ -37,7 +32,6 @@ const PageHeader = ({
             </div>
           )}
 
-          {/* Custom Content */}
           {children}
         </div>
       </div>
